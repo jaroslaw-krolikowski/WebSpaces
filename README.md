@@ -217,7 +217,12 @@ windows are recoverable by hand and belong in an export file you control.
 npm run dev        # esbuild in watch mode
 npm run typecheck  # tsc --noEmit, strict
 npm test           # host, cookie and rule matching tests
+npm run icons      # regenerate icons from src/logo-webspaces.png
 ```
+
+Icons are committed, so `npm run icons` is only needed when the logo changes. The logo is
+glowing shapes on black; the script derives alpha from brightness so the toolbar icon is
+transparent rather than a black tile.
 
 Tests cover the trickiest part - matching cookies to realms. The critical case: `ESTSAUTH` sits
 on `.microsoftonline.com`, which is **broader** than any host in the realm. Matching has to work
