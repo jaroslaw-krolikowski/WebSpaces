@@ -55,7 +55,7 @@ chrome.tabs.onCreated.addListener((tab) => {
  *
  * Without this, a target="_blank" link, a download window, and every popup
  * landed in the default container. With a different container mounted, such a
- * tab was frozen from the start and the gate cut off its requests — downloads
+ * tab was frozen from the start and the gate cut off its requests - downloads
  * died with no message at all. Firefox containers behave the same way.
  */
 async function inheritContainer(tab: chrome.tabs.Tab): Promise<void> {
@@ -190,7 +190,7 @@ chrome.webNavigation.onBeforeNavigate.addListener((details) => {
 /**
  * Rules have to work for EVERY address, not just realm hosts. Realm hosts go
  * through the gate and the picker, where the rule is settled before any request
- * is sent. Everything else — ordinary pages with no isolation — arrives here,
+ * is sent. Everything else - ordinary pages with no isolation - arrives here,
  * once the navigation has committed.
  */
 chrome.webNavigation.onCommitted.addListener((details) => {
@@ -261,7 +261,7 @@ type MenuContext = `${chrome.contextMenus.ContextType}`;
 /**
  * Chrome exposes the tab strip menu (the "tab" context) to extensions only from
  * version 149. On older releases we fall back to the page and action menus,
- * which work everywhere — the feature stays, only the place you click changes.
+ * which work everywhere - the feature stays, only the place you click changes.
  */
 function supportsTabContext(): boolean {
   const match = /Chrome\/(\d+)/.exec(navigator.userAgent);
@@ -325,7 +325,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
 /**
  * Moves a tab into a container. When the tab sits on a realm host it also
- * mounts that container session and reloads the tab — without that the page
+ * mounts that container session and reloads the tab - without that the page
  * would keep showing the previous account and would shortly hit the gate as frozen.
  */
 async function moveTabToContainer(tabId: number, containerId: string): Promise<void> {
@@ -432,7 +432,7 @@ async function handle(request: Request): Promise<unknown> {
       const name = request.name.trim();
       if (!name) throw new Error("The name cannot be empty.");
       if (state.containers.some((c) => c.name.toLowerCase() === name.toLowerCase())) {
-        throw new Error("A container with that name already exists — names must be unique.");
+        throw new Error("A container with that name already exists - names must be unique.");
       }
       const container: Container = {
         id: uid(),
@@ -507,7 +507,7 @@ async function handle(request: Request): Promise<unknown> {
 
     case "saveRules": {
       await saveState({ rules: request.rules });
-      // A new rule should cover tabs that are already open — otherwise you would
+      // A new rule should cover tabs that are already open - otherwise you would
       // have to reload them by hand for anything to happen.
       const moved = await applyRulesToOpenTabs();
       return { ok: true, moved };

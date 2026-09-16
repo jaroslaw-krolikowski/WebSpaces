@@ -9,7 +9,7 @@ let driveReady = false;
 
 /**
  * Every interface action goes through this wrapper. Errors coming from the
- * background used to vanish without a trace — the button simply did nothing.
+ * background used to vanish without a trace - the button simply did nothing.
  */
 function run(action: () => Promise<void>): void {
   void action().catch((error: unknown) => {
@@ -37,7 +37,32 @@ async function load(): Promise<void> {
   renderRealms();
   renderSettings();
   renderBackup();
+  renderSetup();
 }
+
+/* --- Sidebar navigation --- */
+
+const SECTIONS = ["containers", "rules", "realms", "other", "backup"];
+
+function showSection(name: string): void {
+  const target = SECTIONS.includes(name) ? name : "containers";
+  for (const panel of document.querySelectorAll<HTMLElement>("[data-panel]")) {
+    panel.hidden = panel.dataset["panel"] !== target;
+  }
+  for (const item of document.querySelectorAll<HTMLElement>(".nav-item")) {
+    item.setAttribute("aria-current", String(item.dataset["section"] === target));
+  }
+}
+
+for (const item of document.querySelectorAll<HTMLElement>(".nav-item")) {
+  item.addEventListener("click", () => {
+    // Driving the hash rather than the DOM gives back, forward and reload for free.
+    location.hash = item.dataset["section"] ?? "";
+  });
+}
+
+window.addEventListener("hashchange", () => showSection(location.hash.slice(1)));
+showSection(location.hash.slice(1));
 
 /* --- Containers --- */
 
@@ -61,7 +86,7 @@ function renderContainers(): void {
         <input type="checkbox" data-field="isolate" ${container.isolate ? "checked" : ""}
                ${locked ? "disabled" : ""} />
         <span>Keep its own cookie vault
-          <span class="sub">— with this off the container is only a label on a tab group.</span>
+          <span class="sub">- with this off the container is only a label on a tab group.</span>
         </span>
       </label>
     </div>`;
@@ -116,7 +141,7 @@ el("add-container").addEventListener("click", () => {
     await send({ type: "createContainer", name, color: "" });
     input.value = "";
     await load();
-    // A container on its own does not create a tab group yet — the group appears
+    // A container on its own does not create a tab group yet - the group appears
     // once the first tab joins it. Worth saying out loud.
     status(
       `Container "${name}" added. Its tab group will appear once you move the first tab ` +
@@ -215,7 +240,7 @@ el("add-rule").addEventListener("click", () => {
     status(
       moved > 0
         ? `Rule added. Moved ${moved} open ${moved === 1 ? "tab" : "tabs"}.`
-        : "Rule added. No open tab matches it yet — it will apply the next time you visit.",
+        : "Rule added. No open tab matches it yet, it will apply the next time you visit.",
     );
   });
 });
@@ -355,26 +380,74 @@ for (const id of ["auto-mount", "show-interstitial", "clear-site-data"]) {
   });
 }
 
-/* --- Google Drive backup --- */
+/* --- Backup and sync --- */
 
 function renderBackup(): void {
-  el("drive-unconfigured").hidden = driveReady;
+  el("drive-headline").textContent = driveReady ? "Connected build" : "Not configured yet";
   el<HTMLInputElement>("backup-enabled").checked = state.backup.enabled;
-  el<HTMLInputElement>("backup-enabled").disabled = !driveReady;
+
+  for (const id of ["backup-enabled", "backup-interval", "backup-now", "backup-disconnect"]) {
+    el<HTMLInputElement>(id).disabled = !driveReady;
+  }
   el<HTMLSelectElement>("backup-interval").value = String(state.backup.intervalMinutes);
-  el<HTMLButtonElement>("backup-now").disabled = !driveReady;
 
   const node = el("backup-state");
+  node.style.color = "";
+  if (!driveReady) {
+    node.textContent = "Finish the setup below to switch it on.";
+    return;
+  }
   if (state.backup.lastError) {
     node.textContent = `Last attempt failed: ${state.backup.lastError}`;
     node.style.color = "var(--danger)";
     return;
   }
-  node.style.color = "";
   node.textContent = state.backup.lastAt
     ? `Last backup: ${new Date(state.backup.lastAt).toLocaleString()}`
     : "Nothing uploaded yet.";
 }
+
+/**
+ * Walks the setup list forward. Steps one to six are done as soon as a client id
+ * is present in the build, because that is the only observable proof that the
+ * Google side was completed.
+ */
+function renderSetup(): void {
+  el("ext-id").textContent = chrome.runtime.id;
+
+  // Signing into Google Cloud passes through accounts.google.com, so the gate
+  // may well interrupt with the picker. Warn only when that host is isolated.
+  el("setup-realm-note").hidden = !state.realms.some((realm) =>
+    realm.hosts.some((host) => host.includes("accounts.google.com")),
+  );
+
+  for (const step of document.querySelectorAll<HTMLElement>(".step")) {
+    const number = Number(step.dataset["step"]);
+    step.classList.toggle("done", driveReady && number <= 6);
+    step.classList.toggle("active", driveReady ? number === 7 : number === 1);
+  }
+
+  el<HTMLButtonElement>("connect-drive").disabled = !driveReady;
+}
+
+el("copy-id").addEventListener("click", () => {
+  run(async () => {
+    await navigator.clipboard.writeText(chrome.runtime.id);
+    status("Extension ID copied to the clipboard.");
+  });
+});
+
+function uploadNow(): void {
+  run(async () => {
+    status("Uploading to Drive...");
+    await send({ type: "backupNow" });
+    await load();
+    status("Backup uploaded to Google Drive.");
+  });
+}
+
+el("backup-now").addEventListener("click", uploadNow);
+el("connect-drive").addEventListener("click", uploadNow);
 
 for (const id of ["backup-enabled", "backup-interval"]) {
   el(id).addEventListener("change", () => {
@@ -391,15 +464,6 @@ for (const id of ["backup-enabled", "backup-interval"]) {
     });
   });
 }
-
-el("backup-now").addEventListener("click", () => {
-  run(async () => {
-    status("Uploading to Drive…");
-    await send({ type: "backupNow" });
-    await load();
-    status("Backup uploaded to Google Drive.");
-  });
-});
 
 el("backup-disconnect").addEventListener("click", () => {
   if (!confirm("Disconnect the Google account? Automatic backup will be turned off.")) return;

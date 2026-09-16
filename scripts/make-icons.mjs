@@ -1,5 +1,5 @@
 // Icon generator. Draws a rounded square with a 2x2 grid where one cell has a
-// different colour — a readable shorthand for "one of several sessions is live".
+// different colour - a readable shorthand for "one of several sessions is live".
 // The PNG encoder is homemade so the project pulls in no image dependency.
 import { deflateSync } from "node:zlib";
 import { mkdirSync, writeFileSync } from "node:fs";

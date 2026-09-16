@@ -39,7 +39,7 @@ async function resolve(tabId: number, containerId: string, url: string | null): 
   if (!result?.navigated) {
     throw new Error(
       "The tab was assigned to the container, but the address it was heading to could " +
-        "not be determined. Type it again in the address bar — it will go through without asking.",
+        "not be determined. Type it again in the address bar - it will go through without asking.",
     );
   }
 }

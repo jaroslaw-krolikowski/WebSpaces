@@ -2,7 +2,7 @@ const DRIVE_FILES = "https://www.googleapis.com/drive/v3/files";
 const DRIVE_UPLOAD = "https://www.googleapis.com/upload/drive/v3/files";
 const FOLDER_MIME = "application/vnd.google-apps.folder";
 
-/** A token revoked on the Google side — the only error worth retrying. */
+/** A token revoked on the Google side - the only error worth retrying. */
 class ExpiredTokenError extends Error {}
 
 export interface DriveTarget {
@@ -21,7 +21,7 @@ export function isConfigured(): boolean {
 /**
  * A token for the account signed into this Chrome profile. It opens no sign-in
  * page: the whole exchange goes through an internal browser mechanism. That has
- * two consequences worth knowing — the DNR gate has nothing to intercept, and
+ * two consequences worth knowing - the DNR gate has nothing to intercept, and
  * nothing lands in the cookie jar that could pollute the vault of the container
  * currently mounted.
  */
@@ -54,7 +54,7 @@ function describeAuthFailure(cause: unknown, interactive: boolean): string {
   return raw || "Chrome returned no Google token.";
 }
 
-/** Drops the consent stored by Chrome — the next upload asks for it again. */
+/** Drops the consent stored by Chrome - the next upload asks for it again. */
 export async function disconnect(): Promise<void> {
   const result = await chrome.identity.getAuthToken({ interactive: false }).catch(() => null);
   if (result?.token) await chrome.identity.removeCachedAuthToken({ token: result.token });
@@ -73,7 +73,7 @@ async function api(token: string, url: string, init: RequestInit = {}): Promise<
   return response;
 }
 
-/** An apostrophe in a name would break the Drive query — the only char to escape. */
+/** An apostrophe in a name would break the Drive query - the only char to escape. */
 function quote(value: string): string {
   return value.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
 }

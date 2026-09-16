@@ -1,7 +1,7 @@
-# 04 — Opening rules
+# 04 - Opening rules
 
 A rule says "always open this address in that container". It is a purely organisational layer,
-independent of cookie isolation, and it applies to **every address** — not only realm hosts.
+independent of cookie isolation, and it applies to **every address** - not only realm hosts.
 
 ## Pattern semantics
 
@@ -27,7 +27,7 @@ Narrowing to a path requires a slash. A star stands for any fragment.
 
 | Situation | Path |
 |---|---|
-| navigation to a realm host | at the gate, before the first request — the picker clicks itself through |
+| navigation to a realm host | at the gate, before the first request - the picker clicks itself through |
 | navigation to any other host | `webNavigation.onCommitted`, after the navigation lands |
 | rule added or edited | immediately across all open tabs, reporting how many moved |
 | browser start | during `bootstrap()` |
@@ -37,5 +37,5 @@ visible until the next navigation, which reads as a broken feature.
 
 ## Ordering
 
-The first enabled rule that matches wins. There is no specificity ranking — if two rules could
+The first enabled rule that matches wins. There is no specificity ranking - if two rules could
 match the same address, the one earlier in the list decides.

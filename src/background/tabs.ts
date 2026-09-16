@@ -40,7 +40,7 @@ export async function buildGroupMap(containers: Container[]): Promise<Record<num
  * This is the core premise of the extension: a container and a tab group are
  * one thing, not two parallel lists to reconcile by hand.
  *
- * Unnamed groups are skipped — there is nothing to identify them by after a
+ * Unnamed groups are skipped - there is nothing to identify them by after a
  * restart. Returns the containers to append; an empty array when nothing is new.
  */
 export async function adoptGroups(containers: Container[]): Promise<Container[]> {

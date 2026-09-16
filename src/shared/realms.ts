@@ -135,7 +135,7 @@ export function ruleMatches(pattern: string, url: string): boolean {
 
 /**
  * Extracts the address the gate appended to the container picker URL.
- * The marker comes last, so everything after it is taken verbatim — including
+ * The marker comes last, so everything after it is taken verbatim - including
  * the query string that belongs to the address itself, which URLSearchParams
  * would not hand back in one piece.
  */

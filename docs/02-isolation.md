@@ -1,4 +1,4 @@
-# 02 — Isolation
+# 02 - Isolation
 
 ## The platform box
 
@@ -17,7 +17,7 @@ one container per realm at a time.
 
 A tenant tab left in the background keeps polling. With cookies swapped underneath it, those
 requests carry the **mounted** tenant credentials and rotate its `ESTSAUTH`, quietly breaking
-both sessions. Naive cookie swapping is therefore not merely limited — it is unsafe.
+both sessions. Naive cookie swapping is therefore not merely limited - it is unsafe.
 
 ## The gate
 
@@ -37,7 +37,7 @@ Layer 1 doubles as the Firefox-style container prompt.
 
 The redirect uses a regex substitution so the picker receives the original address in its own
 `location`, rather than depending on the service worker having stored it first. If Chrome ever
-rejects that rule, `refreshGate` falls back to a plain `extensionPath` redirect and logs why —
+rejects that rule, `refreshGate` falls back to a plain `extensionPath` redirect and logs why -
 a gate without the address beats no gate at all.
 
 ### Requests with no tab

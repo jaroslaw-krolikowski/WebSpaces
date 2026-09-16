@@ -1,4 +1,4 @@
-# 03 — Realms
+# 03 - Realms
 
 A realm is a set of hosts whose cookies collide between containers. It is the single most
 consequential choice in the project, because it decides how many tabs get frozen.

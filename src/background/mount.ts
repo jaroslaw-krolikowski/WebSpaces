@@ -22,7 +22,7 @@ export async function mountedContainer(realmId: string): Promise<string> {
 
 /**
  * Switches a realm over to the given container: parks the current session,
- * clears the jar, and injects the stored one. The order matters — clearing
+ * clears the jar, and injects the stored one. The order matters - clearing
  * before writing guarantees no leftovers from the previous tenant.
  */
 export async function mountContainer(realm: Realm, containerId: string): Promise<boolean> {

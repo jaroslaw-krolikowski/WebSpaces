@@ -40,7 +40,7 @@ These are verified facts, not assumptions. Do not design around them being false
    Web Store extensions, and MV2 left the Web Store on 2026-08-31.
 
 The only remaining mechanism is swapping cookies through `chrome.cookies` when switching
-containers. That makes isolation **sequential, not parallel** — one container per realm at a
+containers. That makes isolation **sequential, not parallel** - one container per realm at a
 time. This is a property of the platform, not of the implementation.
 
 ## Non-negotiable rules
@@ -56,17 +56,19 @@ time. This is a property of the platform, not of the implementation.
    the tab tree only. File export can include cookies, but only behind an explicit opt-in and
    a confirmation dialog.
 5. **A realm contains only hosts shared across organisations.** Hosts whose name carries the
-   organisation stay out. See `docs/03-realms.md` — this is the single most consequential
+   organisation stay out. See `docs/03-realms.md` - this is the single most consequential
    design rule in the project.
 6. **A container and a tab group are one thing.** Changes flow both ways. Never introduce a
    second parallel list that has to be reconciled by hand.
-7. **Container names are unique** — the name doubles as the tab group title and as the
+7. **Container names are unique** - the name doubles as the tab group title and as the
    fallback binding after a browser restart.
 
 ## Code conventions
 
 - TypeScript `strict: true`, plus `noUncheckedIndexedAccess` and `noUnusedLocals`
 - Comments and UI text in English; no framework, no runtime dependencies
+- **ASCII punctuation only.** Never use an em dash, write a plain hyphen instead. The long dash
+  reads as machine-written text, which is not the impression this project should give.
 - Component and module files in kebab-case directories, camelCase exports
 - `src/shared/` must not touch `chrome.*` at runtime, so it stays unit-testable in Node
 - Anything non-obvious gets a comment explaining **why**, not what

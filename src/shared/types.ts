@@ -1,4 +1,4 @@
-/** Colours Chrome's native tab groups accept — no other value is valid. */
+/** Colours Chrome's native tab groups accept - no other value is valid. */
 export type GroupColor =
   | "grey"
   | "blue"
@@ -138,13 +138,13 @@ export const DEFAULT_CONTAINER: Container = {
 };
 
 /**
- * Realm presets — a starting point, not a closed list. Each one can be edited,
+ * Realm presets - a starting point, not a closed list. Each one can be edited,
  * deleted, or replaced with your own.
  *
  * One rule governs which hosts belong here: only what is SHARED across
  * organisations, because that is the only place cookies actually collide. Hosts
  * whose name carries the organisation (contoso.sharepoint.com,
- * acme.atlassian.net, acme.awsapps.com) are deliberately left out — they do not
+ * acme.atlassian.net, acme.awsapps.com) are deliberately left out - they do not
  * collide, so freezing those tabs would cost you for nothing. That is why two
  * Jira instances from different companies work in parallel, while two Atlassian
  * sign-in screens do not.
@@ -179,7 +179,7 @@ export const BUILTIN_REALMS: Realm[] = [
     builtin: true,
   },
   {
-    // No "*.atlassian.net" — the instance name there carries the organisation.
+    // No "*.atlassian.net" - the instance name there carries the organisation.
     id: "atlassian",
     name: "Atlassian (Jira, Confluence)",
     hosts: [
@@ -193,7 +193,7 @@ export const BUILTIN_REALMS: Realm[] = [
     builtin: true,
   },
   {
-    // No "*.awsapps.com" — that subdomain carries the organisation.
+    // No "*.awsapps.com" - that subdomain carries the organisation.
     id: "aws",
     name: "Amazon Web Services",
     hosts: [

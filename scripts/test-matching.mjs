@@ -1,5 +1,5 @@
 // Tests for host, cookie and rule matching. They run straight against the TS
-// sources — Node strips the types itself. This module touches no chrome.* API,
+// sources - Node strips the types itself. This module touches no chrome.* API,
 // so it can be verified outside the browser.
 import assert from "node:assert/strict";
 import { test } from "node:test";
@@ -122,7 +122,7 @@ test("the picker reads the address the gate appended", () => {
 
 test("a host-only cookie is written without the domain field", () => {
   // Passing domain would turn a host-only cookie into a domain cookie visible
-  // to every subdomain — exactly the leak we are preventing.
+  // to every subdomain - exactly the leak we are preventing.
   const hostOnly = toSetDetails({
     name: "ESTSAUTH",
     value: "x",

@@ -12,7 +12,7 @@ await mkdir(outdir, { recursive: true });
 
 /**
  * The OAuth client id is private to an installation, so it does not live in the
- * repository — it comes from an environment variable or a file outside git.
+ * repository - it comes from an environment variable or a file outside git.
  * Without it the extension works normally, only Drive backup stays disabled.
  */
 async function readClientId() {

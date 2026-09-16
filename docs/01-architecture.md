@@ -1,4 +1,4 @@
-# 01 — Architecture
+# 01 - Architecture
 
 ## Modules
 

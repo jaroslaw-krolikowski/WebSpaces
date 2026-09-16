@@ -26,9 +26,9 @@ const SUBRESOURCES = ALL_RESOURCES.filter((type) => type !== "main_frame");
 /**
  * Recomputes every session rule from scratch. Three priority layers:
  *
- *   1. redirect — any top-level navigation to a realm host lands on the picker,
- *   2. allow    — unless the tab belongs to the container currently mounted,
- *   3. block    — and tabs of foreign containers cannot send even a subresource.
+ *   1. redirect - any top-level navigation to a realm host lands on the picker,
+ *   2. allow    - unless the tab belongs to the container currently mounted,
+ *   3. block    - and tabs of foreign containers cannot send even a subresource.
  *
  * Layer three is the important one: without it, a tenant tab left in the
  * background would keep polling Microsoft and rotate the ESTSAUTH of the mounted
@@ -48,7 +48,7 @@ export async function refreshGate(): Promise<void> {
     });
   } catch (error) {
     // Carrying the address relies on a regex substitution. If Chrome ever
-    // rejects it, a gate without the address beats no gate at all — isolation
+    // rejects it, a gate without the address beats no gate at all - isolation
     // matters more than the convenience of the picker.
     console.error("WebSpaces: gate with carried address rejected, falling back", error);
     await chrome.declarativeNetRequest.updateSessionRules({
@@ -82,7 +82,7 @@ function buildRules(
     const frozen: number[] = [];
     for (const [rawTabId, containerId] of Object.entries(byTab)) {
       const tabId = Number(rawTabId);
-      // A container with isolation off sits this one out — its tabs simply use
+      // A container with isolation off sits this one out - its tabs simply use
       // whatever happens to be in the jar.
       if (!isolating.has(containerId) || containerId === mounted) allowed.push(tabId);
       else frozen.push(tabId);
@@ -93,7 +93,7 @@ function buildRules(
       priority: 1,
       action: carryUrl
         ? // The backreference substitutes the whole matched address, so the
-          // picker receives it directly in its own location — no reliance on the
+          // picker receives it directly in its own location - no reliance on the
           // service worker having stored it beforehand.
           {
             type: "redirect",
@@ -160,7 +160,7 @@ export async function frozenCounts(): Promise<Record<string, number>> {
 
 let pending: ReturnType<typeof setTimeout> | null = null;
 
-/** Batched refresh — tab events tend to arrive in bursts. */
+/** Batched refresh - tab events tend to arrive in bursts. */
 export function scheduleGateRefresh(): void {
   if (pending) clearTimeout(pending);
   pending = setTimeout(() => {

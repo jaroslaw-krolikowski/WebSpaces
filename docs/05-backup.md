@@ -1,4 +1,4 @@
-# 05 — Backup
+# 05 - Backup
 
 Two independent paths: automatic upload to Google Drive, and manual file export/import.
 
@@ -23,7 +23,7 @@ sign-in page. Two consequences that matter here:
 - the DNR gate has nothing to intercept, so the sign-in cannot be blocked by our own rules;
 - nothing lands in the cookie jar, so the mounted container vault stays clean.
 
-The scope is `https://www.googleapis.com/auth/drive.file` — the narrowest available. The
+The scope is `https://www.googleapis.com/auth/drive.file` - the narrowest available. The
 extension sees only files it created itself. A side effect: a `WebSpaces` folder made by hand is
 invisible to it and it will create its own.
 
