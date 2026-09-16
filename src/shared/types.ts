@@ -86,6 +86,8 @@ export interface Settings {
   showInterstitial: boolean;
   /** Clear localStorage and IndexedDB for realm hosts when switching containers. */
   clearSiteDataOnSwitch: boolean;
+  /** Carry the configuration between Chrome profiles through chrome.storage.sync. */
+  syncEnabled: boolean;
 }
 
 export interface State {
@@ -101,6 +103,14 @@ export interface State {
    */
   seeded: boolean;
   backup: BackupState;
+  sync: SyncState;
+}
+
+/** State of the zero-setup configuration sync through chrome.storage.sync. */
+export interface SyncState {
+  /** Timestamp of the last successful exchange, ISO 8601. */
+  lastAt: string | null;
+  lastError: string | null;
 }
 
 /** Google Drive backup state. */
@@ -120,6 +130,12 @@ export const DEFAULT_SETTINGS: Settings = {
   autoMountOnFocus: true,
   showInterstitial: true,
   clearSiteDataOnSwitch: true,
+  syncEnabled: true,
+};
+
+export const DEFAULT_SYNC: SyncState = {
+  lastAt: null,
+  lastError: null,
 };
 
 export const DEFAULT_BACKUP: BackupState = {

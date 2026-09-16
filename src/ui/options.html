@@ -135,6 +135,32 @@
             anyone who takes over that Google account.
           </p>
 
+          <h3>Sync across your Chrome profiles</h3>
+          <div class="card">
+            <label class="check">
+              <input type="checkbox" id="sync-enabled" />
+              <span>
+                Sync the configuration through Chrome
+                <span class="sub">
+                  - carries containers, realms, rules and settings to every Chrome you are signed
+                  into with the same account. No setup at all: Chrome moves it over the account
+                  the profile already uses, with no Google Cloud project and no client ID.
+                  Windows, tabs and cookies are not included, and the shared copy is capped at
+                  100 KB.
+                </span>
+              </span>
+            </label>
+            <div class="row spread">
+              <span class="sub" id="sync-state"></span>
+              <button id="sync-clear">Clear the shared copy</button>
+            </div>
+          </div>
+
+          <h3>Full backup on Google Drive</h3>
+          <p class="sub">
+            Adds what sync leaves out: windows and tabs, a file you can open and keep, and
+            version history. It needs a one-time registration in Google Cloud, described below.
+          </p>
           <div class="card">
             <div class="row spread">
               <strong id="drive-headline">Not configured</strong>
@@ -159,9 +185,11 @@
 
           <h3>Setup</h3>
           <p class="sub">
-            Google requires every application to be registered before it can touch a Drive. This
-            takes about five minutes and only has to be done once. Each step opens the page you
-            need in a new tab.
+            Google has no registration-free way into a Drive: every call needs a client ID, and a
+            client ID needs a Cloud Console project. You register <strong>your own</strong>, so
+            the access runs under your project and your quota and nobody else is responsible for
+            it. It takes about five minutes and is done once. Each step opens the page it needs
+            in a new tab.
           </p>
           <div class="warn" id="setup-realm-note" hidden>
             Signing into Google Cloud goes through
@@ -176,8 +204,10 @@
                 <span class="step-no">1</span><strong>Copy the extension ID</strong>
               </div>
               <p class="sub">
-                Google ties the credentials to this exact extension. The ID depends on the folder
-                the extension is loaded from, so it changes if you move the project.
+                Google ties the credentials to this exact extension. By default the ID is derived
+                from the folder the extension loads from, so it changes if you move the project
+                and differs on another machine. Running <span class="mono">npm run key</span>
+                once pins it for good, which keeps a single registration valid everywhere.
               </p>
               <div class="row">
                 <code class="mono grow" id="ext-id"></code>

@@ -19,6 +19,7 @@ import { disconnect as driveDisconnect, isConfigured as driveConfigured } from "
 import { frozenCounts, refreshGate, scheduleGateRefresh } from "./gate";
 import { mountContainer, mountedContainer, noteCookieChange } from "./mount";
 import { applySnapshot, buildSnapshot } from "./snapshot";
+import { clearSync, isForeignChange, pullFromSync, pushToSync } from "./sync";
 import { adoptGroups, assignTabToContainer, resolveAllTabs, resolveTab } from "./tabs";
 
 /* --- Lifecycle --- */
@@ -32,12 +33,43 @@ chrome.runtime.onStartup.addListener(() => {
 });
 
 async function bootstrap(): Promise<void> {
-  await loadState();
+  const state = await loadState();
+  // The shared configuration comes first so this device starts from what the
+  // other machines agreed on, rather than pushing a stale copy over it.
+  if (state.settings.syncEnabled) await pullFromSync();
   await syncContainersWithGroups();
   await rebuildContextMenus();
   await applyRulesToOpenTabs();
   await refreshGate();
   await rescheduleBackup();
+  await pushToSync();
+}
+
+/**
+ * Configuration sync rides on storage events rather than on call sites, so a
+ * change made anywhere reaches the other devices without every handler having to
+ * remember to push.
+ */
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === "local" && changes["state"]) {
+    schedulePush();
+    return;
+  }
+  if (area !== "sync") return;
+  void (async () => {
+    if (await isForeignChange(changes)) await pullFromSync();
+  })();
+});
+
+let pushTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** Editing a realm host list fires a change per keystroke, so writes are batched. */
+function schedulePush(): void {
+  if (pushTimer) clearTimeout(pushTimer);
+  pushTimer = setTimeout(() => {
+    pushTimer = null;
+    void pushToSync();
+  }, 1500);
 }
 
 chrome.alarms.onAlarm.addListener((alarm) => {
@@ -602,6 +634,12 @@ async function handle(request: Request): Promise<unknown> {
       await rescheduleBackup();
       return { ok: true };
     }
+
+    case "clearSync":
+      // Wipes only the shared copy. What is on this device stays untouched, so
+      // this is a way out of a bad sync rather than a way to lose the setup.
+      await clearSync();
+      return { ok: true };
 
     case "exportSnapshot":
       return buildSnapshot(request.includeCookies);

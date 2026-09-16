@@ -4,6 +4,7 @@ import {
   DEFAULT_CONTAINER,
   DEFAULT_CONTAINER_ID,
   DEFAULT_SETTINGS,
+  DEFAULT_SYNC,
 } from "./types";
 import type { State, StoredCookie, Vault } from "./types";
 
@@ -34,6 +35,7 @@ export async function loadState(): Promise<State> {
     settings: { ...DEFAULT_SETTINGS, ...stored?.settings },
     mounted: stored?.mounted ?? {},
     backup: { ...DEFAULT_BACKUP, ...stored?.backup },
+    sync: { ...DEFAULT_SYNC, ...stored?.sync },
     seeded,
   };
 }

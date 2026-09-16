@@ -38,7 +38,56 @@ async function load(): Promise<void> {
   renderSettings();
   renderBackup();
   renderSetup();
+  renderSync();
 }
+
+/* --- Configuration sync --- */
+
+function renderSync(): void {
+  el<HTMLInputElement>("sync-enabled").checked = state.settings.syncEnabled;
+
+  const node = el("sync-state");
+  node.style.color = "";
+  if (state.sync.lastError) {
+    node.textContent = state.sync.lastError;
+    node.style.color = "var(--danger)";
+    return;
+  }
+  if (!state.settings.syncEnabled) {
+    node.textContent = "Off. This device keeps its configuration to itself.";
+    return;
+  }
+  node.textContent = state.sync.lastAt
+    ? `Last exchange: ${new Date(state.sync.lastAt).toLocaleString()}`
+    : "Waiting for the first exchange.";
+}
+
+el("sync-enabled").addEventListener("change", () => {
+  run(async () => {
+    await send({
+      type: "saveSettings",
+      settings: { ...state.settings, syncEnabled: el<HTMLInputElement>("sync-enabled").checked },
+    });
+    await load();
+  });
+});
+
+el("sync-clear").addEventListener("click", () => {
+  if (
+    !confirm(
+      "Clear the configuration shared through Chrome?\n\n" +
+        "Only the shared copy goes away. This device keeps everything it has, and the next " +
+        "change here will publish it again.",
+    )
+  ) {
+    return;
+  }
+  run(async () => {
+    await send({ type: "clearSync" });
+    await load();
+    status("Shared copy cleared.");
+  });
+});
 
 /* --- Sidebar navigation --- */
 
@@ -371,11 +420,13 @@ for (const id of ["auto-mount", "show-interstitial", "clear-site-data"]) {
       await send({
         type: "saveSettings",
         settings: {
+          ...state.settings,
           autoMountOnFocus: el<HTMLInputElement>("auto-mount").checked,
           showInterstitial: el<HTMLInputElement>("show-interstitial").checked,
           clearSiteDataOnSwitch: el<HTMLInputElement>("clear-site-data").checked,
         },
       });
+      await load();
     });
   });
 }

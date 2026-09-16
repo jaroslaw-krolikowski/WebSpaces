@@ -5,6 +5,7 @@ import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 const watch = process.argv.includes("--watch");
 const outdir = "dist";
 const CLIENT_ID_FILE = "google-client-id.txt";
+const EXTENSION_KEY_FILE = "extension-key.txt";
 const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
 
 await rm(outdir, { recursive: true, force: true });
@@ -17,8 +18,12 @@ await mkdir(outdir, { recursive: true });
  */
 async function readClientId() {
   if (process.env.GOOGLE_CLIENT_ID) return process.env.GOOGLE_CLIENT_ID.trim();
+  return readLocal(CLIENT_ID_FILE);
+}
+
+async function readLocal(file) {
   try {
-    return (await readFile(CLIENT_ID_FILE, "utf8")).trim();
+    return (await readFile(file, "utf8")).trim();
   } catch {
     return "";
   }
@@ -26,12 +31,17 @@ async function readClientId() {
 
 async function writeManifest() {
   const manifest = JSON.parse(await readFile("manifest.json", "utf8"));
+
+  // The key pins the extension ID across machines and moves, which is what makes
+  // one OAuth client enough for the whole project. Without it Chrome derives the
+  // ID from the directory path and the registration stops matching.
+  const extensionKey = await readLocal(EXTENSION_KEY_FILE);
+  if (extensionKey) manifest.key = extensionKey;
+
   const clientId = await readClientId();
-  if (clientId) {
-    manifest.oauth2 = { client_id: clientId, scopes: [DRIVE_SCOPE] };
-  }
+  if (clientId) manifest.oauth2 = { client_id: clientId, scopes: [DRIVE_SCOPE] };
+
   await writeFile(`${outdir}/manifest.json`, `${JSON.stringify(manifest, null, 2)}\n`);
-  return Boolean(clientId);
 }
 
 /** Assets copied to the output directory unchanged. */
@@ -77,10 +87,14 @@ if (watch) {
 } else {
   await esbuild.build(options);
   await copyAssets();
-  const configured = await readClientId();
   console.log("Done. Load the dist/ directory via chrome://extensions, Load unpacked.");
   console.log(
-    configured
+    (await readLocal(EXTENSION_KEY_FILE))
+      ? "Extension ID: pinned by the manifest key."
+      : `Extension ID: derived from the folder path (run npm run key to pin it).`,
+  );
+  console.log(
+    (await readClientId())
       ? "Google Drive backup: OAuth client id injected."
       : `Google Drive backup: disabled (no ${CLIENT_ID_FILE}, no GOOGLE_CLIENT_ID).`,
   );

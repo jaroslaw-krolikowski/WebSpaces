@@ -55,6 +55,7 @@ export type Request =
   | { type: "saveBackup"; backup: BackupState }
   | { type: "backupNow" }
   | { type: "backupDisconnect" }
+  | { type: "clearSync" }
   | { type: "openInContainer"; url: string; containerId: string }
   // The url comes from the address of the picker page itself: the gate appends
   // it to the redirect, so it never depends on the service worker having stored it.

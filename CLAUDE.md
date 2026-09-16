@@ -22,7 +22,7 @@ Read in this order:
 | `docs/02-isolation.md` | the gate, mounting, the vault, and what is out of reach |
 | `docs/03-realms.md` | how to choose realm hosts, and why that choice matters |
 | `docs/04-rules.md` | opening rules and pattern semantics |
-| `docs/05-backup.md` | Google Drive backup and file export |
+| `docs/05-backup.md` | Chrome sync, Google Drive backup, file export |
 | `docs/06-development.md` | build, tests, conventions |
 
 `README.md` is the user-facing entry point and repeats the essentials.
@@ -70,7 +70,8 @@ time. This is a property of the platform, not of the implementation.
 - **ASCII punctuation only.** Never use an em dash, write a plain hyphen instead. The long dash
   reads as machine-written text, which is not the impression this project should give.
 - Component and module files in kebab-case directories, camelCase exports
-- `src/shared/` must not touch `chrome.*` at runtime, so it stays unit-testable in Node
+- `types.ts` and `realms.ts` must not touch `chrome.*` at runtime, because the Node tests import
+  them directly. The rest of `src/shared/` is free to use the browser APIs.
 - Anything non-obvious gets a comment explaining **why**, not what
 
 ## What not to do
@@ -87,7 +88,15 @@ time. This is a property of the platform, not of the implementation.
   without buying isolation.
 - Do not drop the `seeded` flag. Without it, deleting every realm resurrects the presets on
   the next state read.
-- Do not commit `google-client-id.txt`. It is gitignored and injected at build time.
+- Do not commit `google-client-id.txt`, `extension-key.txt` or `extension-key.pem`. All three
+  are gitignored and injected at build time.
+- **Do not bundle an OAuth client ID with the extension.** Every user registers their own, so
+  Drive access runs under their project, their quota and their responsibility. A shared client
+  ID would move all of that onto the maintainer. The guided setup exists to make that cheap.
+- Do not let `pushToSync` write an unchanged payload. Applying a remote change saves local
+  state, which triggers a push, which the other device applies - the two would bounce the same
+  configuration forever. The equality check in `pushToSync` is what stops it, and the writer id
+  in the metadata guards the same loop within one device.
 
 ## Environment notes
 

@@ -160,17 +160,51 @@ The **tab strip** menu needs Chrome 149 or newer - earlier releases did not expo
 to extensions. On older Chrome the entry is simply absent and the page and icon menus work
 unchanged. Check your version at `chrome://version`.
 
-## Google Drive backup
+## Backup and sync
 
-WebSpaces can upload a backup into a **`WebSpaces`** folder on the Drive of the account signed
-into this Chrome profile. The backup holds containers, realms, rules, windows and tabs -
-**never cookies**. The file lands in the cloud automatically and unattended, and sign-in
-sessions in plain text would give anyone who takes over that Google account entry to every
-tenant without a password and without MFA.
+Three paths, in order of how much they ask of you.
+
+| Path | Setup | Carries | Good for |
+|---|---|---|---|
+| Chrome sync | none | containers, realms, rules, settings | the same setup on every machine |
+| Google Drive | one registration | the above plus windows and tabs | a real file, history, full restore |
+| File export | none | the above, cookies optional | moving between accounts, archiving |
+
+### Chrome sync
+
+**On by default and free of setup.** `chrome.storage.sync` carries the configuration over the
+account your Chrome profile is already signed into - no OAuth, no Cloud project, no client ID.
+For most people this is the whole answer.
+
+It leaves out windows and tabs, which are specific to a machine, and cookies, which never leave
+the device automatically. The shared copy is capped at 100 KB; a realistic configuration is
+around 5 KB, and if a write ever fails the reason appears in settings rather than silently.
+
+Conflicts resolve as last writer wins over the whole configuration.
+
+### Google Drive backup
+
+Adds what sync leaves out: windows and tabs, an actual file you can open and keep, and version
+history. It uploads into a **`WebSpaces`** folder on the Drive of the signed-in account and
+**never includes cookies** - the file lands in the cloud unattended, and sign-in sessions in
+plain text would give anyone who takes over that Google account entry to every tenant without a
+password and without MFA.
 
 Authentication goes through `chrome.identity.getAuthToken`, an internal browser mechanism
 rather than a sign-in page. Two useful consequences: **the gate has nothing to intercept**, and
 **nothing lands in the cookie jar** that could pollute the mounted container vault.
+
+#### Why you register your own credentials
+
+Google has no registration-free way into a Drive: every call needs a client ID, and a client ID
+needs a Cloud Console project. WebSpaces ships no client ID of its own on purpose. Bundling one
+would route every user through a single maintainer project, under that maintainer quota and that
+maintainer responsibility. Registering your own takes five minutes once and keeps the access
+yours.
+
+If you use WebSpaces on more than one machine, run `npm run key` first. It pins the extension ID
+so a single registration stays valid everywhere, instead of changing whenever the project folder
+moves. Both key files are gitignored.
 
 ### Setup
 
@@ -218,6 +252,7 @@ the file then holds live sign-in sessions in plain text.
 npm run dev        # esbuild in watch mode
 npm run typecheck  # tsc --noEmit, strict
 npm test           # host, cookie and rule matching tests
+npm run key        # pin the extension id, once per installation
 ```
 
 Tests cover the trickiest part - matching cookies to realms. The critical case: `ESTSAUTH` sits

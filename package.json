@@ -8,7 +8,8 @@
     "build": "node build.mjs",
     "dev": "node build.mjs --watch",
     "typecheck": "tsc --noEmit",
-    "test": "node --test scripts/test-matching.mjs"
+    "test": "node --test scripts/test-matching.mjs",
+    "key": "node scripts/make-key.mjs"
   },
   "devDependencies": {
     "@types/chrome": "^0.1.30",
