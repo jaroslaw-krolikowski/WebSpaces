@@ -100,6 +100,20 @@ For an installed application that secret identifies the project rather than prot
 is why it is acceptable to keep it in local storage - but it is still kept out of the sync
 payload, out of the backup file and out of the repository.
 
+### Publishing status is not optional
+
+The consent screen must be published, not left in Testing. Two reasons, and the second is the
+one that bites late:
+
+- In Testing, Google refuses every account outside the test user list. That is what
+  `Error 403: access_denied` means at the consent step, with correct request parameters.
+- **Refresh tokens issued in Testing expire after seven days.** Unattended uploads would work,
+  then silently stop every week, which is a far worse failure than never starting.
+
+Publishing costs nothing here. `drive.file` is a non-sensitive scope, so it needs no security
+assessment and no review queue. The connect flow says all of this when Google turns it down,
+because an opaque 403 sends people looking in the wrong place.
+
 ### Setup progress
 
 Steps two to five happen inside Google Cloud and cannot be observed from the extension, so the

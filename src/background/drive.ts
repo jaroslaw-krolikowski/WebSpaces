@@ -137,10 +137,26 @@ export async function connect(): Promise<void> {
     await refreshGate();
   }
 
-  if (!redirect) throw new Error("The consent window was closed before finishing.");
-  const code = new URL(redirect).searchParams.get("code");
-  const error = new URL(redirect).searchParams.get("error");
+  if (!redirect) {
+    throw new Error(
+      "The consent window closed before finishing. If it showed Error 403 access_denied, the " +
+        "app is still in Testing publishing status: press Publish app on the Audience page in " +
+        "Google Cloud. No review is needed, drive.file is a non-sensitive scope.",
+    );
+  }
+
+  const params = new URL(redirect).searchParams;
+  const error = params.get("error");
+  if (error === "access_denied") {
+    throw new Error(
+      "Google refused the consent. Either the app is still in Testing publishing status and " +
+        "this account is not a test user, or you declined. Publishing the app on the Audience " +
+        "page fixes the first case and needs no review.",
+    );
+  }
   if (error) throw new Error(`Google returned: ${error}`);
+
+  const code = params.get("code");
   if (!code) throw new Error("Google returned no authorisation code.");
 
   const data = await postToken({

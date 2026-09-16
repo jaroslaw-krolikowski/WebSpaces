@@ -219,11 +219,17 @@ The list below is the same thing in text form.
 2. In [Google Cloud Console](https://console.cloud.google.com) create a project.
 3. Enable the **Google Drive API**.
 4. OAuth consent screen: **External** (or **Internal** with Workspace), scope
-   `https://www.googleapis.com/auth/drive.file`, add yourself as a test user.
+   `https://www.googleapis.com/auth/drive.file`, then **press Publish app** on the Audience page.
 5. **Credentials > Create > OAuth client ID**, application type **Web application**, and add the
    redirect URI shown in step 5, which is `https://<extension-id>.chromiumapp.org/`.
 6. Paste the **client ID** and **client secret** into the panel and press Save.
 7. Press **Connect and upload now** and accept the consent window.
+
+**Publish the app, do not leave it in Testing.** In Testing the consent screen refuses every
+account outside the test user list, which shows up as `Error 403: access_denied`, and refresh
+tokens issued in Testing **expire after seven days**, so unattended uploads would quietly stop
+every week. Publishing needs no review here: `drive.file` is a
+[non-sensitive scope](https://developers.google.com/identity/protocols/oauth2/production-readiness/sensitive-scope-verification).
 
 **It has to be the Web application type**, not Chrome Extension. Only the Web application type
 issues a client secret, and Google will not return a refresh token without one, so unattended

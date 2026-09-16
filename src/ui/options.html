@@ -260,10 +260,18 @@
                 <span class="step-no">4</span><strong>Configure the consent screen</strong>
               </div>
               <p class="sub">
-                Choose External (or Internal on Workspace), add the scope
-                <span class="mono">.../auth/drive.file</span> and add your own address as a test
-                user. That scope is the narrowest one available: the extension sees only files it
-                created itself and cannot read the rest of your Drive.
+                Choose External (or Internal on Workspace) and add the scope
+                <span class="mono">.../auth/drive.file</span>. It is the narrowest one available:
+                the extension sees only files it created itself and cannot read the rest of your
+                Drive.
+              </p>
+              <p class="sub">
+                <strong>Then press Publish app</strong> on the Audience page. Left in Testing, the
+                consent screen refuses every account that is not on the test user list, which is
+                the usual cause of <span class="mono">Error 403: access_denied</span> - and
+                refresh tokens issued in Testing expire after seven days, so unattended uploads
+                would quietly stop every week. Publishing needs no review here, because
+                <span class="mono">drive.file</span> is a non-sensitive scope.
               </p>
               <div class="row">
                 <a
@@ -271,8 +279,16 @@
                   data-advance="4"
                   target="_blank"
                   rel="noreferrer"
-                  href="https://console.cloud.google.com/apis/credentials/consent"
-                  >Open the consent screen</a
+                  href="https://console.cloud.google.com/auth/scopes"
+                  >Open scopes</a
+                >
+                <a
+                  class="btn"
+                  data-advance="4"
+                  target="_blank"
+                  rel="noreferrer"
+                  href="https://console.cloud.google.com/auth/audience"
+                  >Open audience and publishing</a
                 >
               </div>
             </li>
