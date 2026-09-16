@@ -1,6 +1,3 @@
 node_modules/
 dist/
 *.log
-extension-key.txt
-extension-key.pem
-google-client-id.txt

@@ -1,17 +1,10 @@
 import { send } from "../shared/messages";
-import type { DriveStatus, Overview, Snapshot } from "../shared/messages";
+import type { Overview, Snapshot } from "../shared/messages";
 import { BUILTIN_REALMS, COLOR_HEX, DEFAULT_CONTAINER_ID, GROUP_COLORS } from "../shared/types";
 import type { Container, GroupColor, Realm, Rule, State } from "../shared/types";
 import { el, esc } from "./dom";
 
 let state: State;
-let drive: DriveStatus = {
-  configured: false,
-  connected: false,
-  extensionId: "",
-  clientId: "",
-  pendingRebuild: false,
-};
 
 /**
  * Every interface action goes through this wrapper. Errors coming from the
@@ -37,13 +30,10 @@ function clearStatus(): void {
 async function load(): Promise<void> {
   const overview = await send<Overview>({ type: "getOverview" });
   state = overview.state;
-  drive = overview.drive;
   renderContainers();
   renderRules();
   renderRealms();
   renderSettings();
-  renderBackup();
-  renderSetup();
   renderSync();
 }
 
@@ -436,146 +426,6 @@ for (const id of ["auto-mount", "show-interstitial", "clear-site-data"]) {
     });
   });
 }
-
-/* --- Backup and sync --- */
-
-function renderBackup(): void {
-  el("drive-headline").textContent = drive.connected
-    ? "Connected"
-    : drive.configured
-      ? "Credentials saved, not connected"
-      : "Not configured yet";
-  el<HTMLInputElement>("backup-enabled").checked = state.backup.enabled;
-
-  for (const id of ["backup-enabled", "backup-interval", "backup-now", "backup-disconnect"]) {
-    el<HTMLInputElement>(id).disabled = !drive.connected;
-  }
-  el<HTMLSelectElement>("backup-interval").value = String(state.backup.intervalMinutes);
-
-  const node = el("backup-state");
-  node.style.color = "";
-  if (!drive.connected) {
-    node.textContent = "Finish the setup below to switch it on.";
-    return;
-  }
-  if (state.backup.lastError) {
-    node.textContent = `Last attempt failed: ${state.backup.lastError}`;
-    node.style.color = "var(--danger)";
-    return;
-  }
-  node.textContent = state.backup.lastAt
-    ? `Last backup: ${new Date(state.backup.lastAt).toLocaleString()}`
-    : "Nothing uploaded yet.";
-}
-
-/** Marks progress through the setup list and fills in the values it shows. */
-function renderSetup(): void {
-  el("ext-id").textContent = drive.extensionId;
-  el<HTMLInputElement>("client-id").value = drive.clientId;
-
-  // The command is only useful once there is an id to put in it.
-  el("command-row").hidden = !drive.clientId;
-  el("build-command").textContent = `npm run client-id -- ${drive.clientId}`;
-  el("rebuild-note").hidden = !drive.pendingRebuild;
-
-  // Signing into Google Cloud passes through accounts.google.com, so the gate
-  // may well interrupt with the picker. Warn only when that host is isolated.
-  el("setup-realm-note").hidden = !state.realms.some((realm) =>
-    realm.hosts.some((host) => host.includes("accounts.google.com")),
-  );
-
-  const completed = state.setup.completed;
-  for (const step of document.querySelectorAll<HTMLElement>(".step")) {
-    const number = Number(step.dataset["step"]);
-    step.classList.toggle("done", number <= completed);
-    step.classList.toggle("active", number === completed + 1);
-  }
-
-  el<HTMLButtonElement>("connect-drive").disabled = !drive.configured;
-}
-
-/**
- * Steps two to five happen inside Google Cloud, which we cannot observe, so the
- * click that opens the page is what moves the list along. Steps six and seven
- * advance on real state instead, in the background handlers.
- */
-for (const node of document.querySelectorAll<HTMLElement>("[data-advance]")) {
-  node.addEventListener("click", () => {
-    run(async () => {
-      await send({ type: "advanceSetup", step: Number(node.dataset["advance"]) });
-      await load();
-    });
-  });
-}
-
-el("copy-id").addEventListener("click", () => {
-  run(async () => {
-    await navigator.clipboard.writeText(drive.extensionId);
-    await send({ type: "advanceSetup", step: 1 });
-    await load();
-    status("Extension ID copied to the clipboard.");
-  });
-});
-
-el("copy-command").addEventListener("click", () => {
-  run(async () => {
-    await navigator.clipboard.writeText(el("build-command").textContent ?? "");
-    status("Command copied. Run it in the project folder, then reload the extension.");
-  });
-});
-
-el("save-client-id").addEventListener("click", () => {
-  const clientId = el<HTMLInputElement>("client-id").value;
-  run(async () => {
-    clearStatus();
-    await send({ type: "saveClientId", clientId });
-    await load();
-    status("Saved. Run the command below, then reload the extension at chrome://extensions.");
-  });
-});
-
-el("connect-drive").addEventListener("click", () => {
-  run(async () => {
-    status("Opening the Google consent window...");
-    await send({ type: "backupConnect" });
-    await load();
-    status("Connected, and the first backup is on your Drive.");
-  });
-});
-
-el("backup-now").addEventListener("click", () => {
-  run(async () => {
-    status("Uploading to Drive...");
-    await send({ type: "backupNow" });
-    await load();
-    status("Backup uploaded to Google Drive.");
-  });
-});
-
-for (const id of ["backup-enabled", "backup-interval"]) {
-  el(id).addEventListener("change", () => {
-    run(async () => {
-      await send({
-        type: "saveBackup",
-        backup: {
-          ...state.backup,
-          enabled: el<HTMLInputElement>("backup-enabled").checked,
-          intervalMinutes: Number(el<HTMLSelectElement>("backup-interval").value),
-        },
-      });
-      await load();
-    });
-  });
-}
-
-el("backup-disconnect").addEventListener("click", () => {
-  if (!confirm("Disconnect the Google account? Automatic backup will be turned off.")) return;
-  run(async () => {
-    await send({ type: "backupDisconnect" });
-    await load();
-    status("Account disconnected. Files already on Drive are left untouched.");
-  });
-});
 
 /* --- File export and import --- */
 

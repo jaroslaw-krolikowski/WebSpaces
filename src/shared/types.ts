@@ -102,35 +102,13 @@ export interface State {
    * realm would resurrect them on the next read of the state.
    */
   seeded: boolean;
-  backup: BackupState;
   sync: SyncState;
-  setup: SetupState;
-}
-
-/** How far the guided Google Drive setup has been taken. */
-export interface SetupState {
-  /**
-   * Highest step finished, 0 to 7. Steps one to five cannot be verified from
-   * here because they happen inside Google Cloud, so they advance on the click
-   * that opens them. The last two are derived from real state instead.
-   */
-  completed: number;
 }
 
 /** State of the zero-setup configuration sync through chrome.storage.sync. */
 export interface SyncState {
   /** Timestamp of the last successful exchange, ISO 8601. */
   lastAt: string | null;
-  lastError: string | null;
-}
-
-/** Google Drive backup state. */
-export interface BackupState {
-  enabled: boolean;
-  intervalMinutes: number;
-  /** Timestamp of the last successful upload, ISO 8601. */
-  lastAt: string | null;
-  /** Why the last attempt failed; surfaced in the options page. */
   lastError: string | null;
 }
 
@@ -149,14 +127,6 @@ export const DEFAULT_SYNC: SyncState = {
   lastError: null,
 };
 
-export const DEFAULT_SETUP: SetupState = { completed: 0 };
-
-export const DEFAULT_BACKUP: BackupState = {
-  enabled: false,
-  intervalMinutes: 60,
-  lastAt: null,
-  lastError: null,
-};
 
 export const DEFAULT_CONTAINER: Container = {
   id: DEFAULT_CONTAINER_ID,

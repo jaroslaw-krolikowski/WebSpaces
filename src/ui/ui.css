@@ -1,3 +1,12 @@
+/**
+ * Reserve the scrollbar track on the settings page at all times. Switching
+ * between a short panel and a tall one would otherwise add and remove the
+ * scrollbar, shifting the whole layout sideways on every click.
+ */
+html:has(body.page) {
+  scrollbar-gutter: stable;
+}
+
 :root {
   --bg: #ffffff;
   --surface: #f5f6f8;

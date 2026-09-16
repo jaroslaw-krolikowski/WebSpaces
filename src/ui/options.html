@@ -128,11 +128,8 @@
         <section class="panel" data-panel="backup" hidden>
           <h2>Backup &amp; Sync</h2>
           <p class="sub">
-            Uploads containers, realms, rules, windows and tabs into a
-            <span class="mono">WebSpaces</span> folder on the Drive of the account signed into
-            this Chrome profile. <strong>Cookies never go there</strong>: the file lands in the
-            cloud unattended, and sign-in sessions in plain text would open every tenant to
-            anyone who takes over that Google account.
+            Two mechanisms, neither of which asks you to set anything up. Chrome carries your
+            configuration between profiles on its own, and a JSON file covers everything else.
           </p>
 
           <h3>Sync across your Chrome profiles</h3>
@@ -143,10 +140,9 @@
                 Sync the configuration through Chrome
                 <span class="sub">
                   - carries containers, realms, rules and settings to every Chrome you are signed
-                  into with the same account. No setup at all: Chrome moves it over the account
-                  the profile already uses, with no Google Cloud project and no client ID.
-                  Windows, tabs and cookies are not included, and the shared copy is capped at
-                  100 KB.
+                  into with the same account. Chrome moves it over the account the profile
+                  already uses, so there is nothing to connect and nothing to configure. Windows,
+                  tabs and cookies are not included, and the shared copy is capped at 100 KB.
                 </span>
               </span>
             </label>
@@ -156,214 +152,12 @@
             </div>
           </div>
 
-          <h3>Full backup on Google Drive</h3>
+          <h3>Export and import a file</h3>
           <p class="sub">
-            Adds what sync leaves out: windows and tabs, a file you can open and keep, and
-            version history. It needs a one-time registration in Google Cloud, described below.
+            Covers what sync leaves out: windows and tabs, and a file you can keep wherever you
+            like. Put it in a folder your cloud drive already syncs and you have an off-machine
+            backup without granting anything access to your account.
           </p>
-          <div class="card">
-            <div class="row spread">
-              <strong id="drive-headline">Not configured</strong>
-              <span class="sub" id="backup-state"></span>
-            </div>
-            <label class="check" style="margin-top: 10px">
-              <input type="checkbox" id="backup-enabled" />
-              <span>Upload a backup automatically</span>
-            </label>
-            <div class="row">
-              <label class="sub" for="backup-interval">Every</label>
-              <select id="backup-interval" style="width: auto">
-                <option value="15">15 minutes</option>
-                <option value="60">hour</option>
-                <option value="360">6 hours</option>
-                <option value="1440">day</option>
-              </select>
-              <button class="primary" id="backup-now">Upload now</button>
-              <button id="backup-disconnect">Disconnect account</button>
-            </div>
-          </div>
-
-          <h3>Setup</h3>
-          <p class="sub">
-            Google has no registration-free way into a Drive: every call needs a client ID, and a
-            client ID needs a Cloud Console project. You register <strong>your own</strong>, so
-            the access runs under your project and your quota and nobody else is responsible for
-            it. It takes about five minutes and is done once. Each step opens the page it needs
-            in a new tab.
-          </p>
-          <div class="warn" id="setup-realm-note" hidden>
-            Opening the Google Cloud pages below may pass through
-            <span class="mono">accounts.google.com</span>, which sits in your Google realm. If the
-            container picker appears, choose the container holding the Google account you want to
-            use for backups. Connecting in step 7 does not go through that page at all.
-          </div>
-
-          <ol class="steps" id="setup-steps">
-            <li class="step" data-step="1">
-              <div class="step-head">
-                <span class="step-no">1</span><strong>Copy the extension ID</strong>
-              </div>
-              <p class="sub">
-                Google ties the client to this exact extension. By default the ID is derived from
-                the folder the extension loads from, so it changes if you move the project and
-                differs on another machine. Running <span class="mono">npm run key</span> once
-                pins it for good, which keeps a single registration valid everywhere.
-              </p>
-              <div class="row">
-                <code class="mono grow" id="ext-id"></code>
-                <button id="copy-id">Copy</button>
-              </div>
-            </li>
-
-            <li class="step" data-step="2">
-              <div class="step-head">
-                <span class="step-no">2</span><strong>Create a Google Cloud project</strong>
-              </div>
-              <p class="sub">
-                A project is just a container for the credentials. Any name will do and nothing
-                is billed.
-              </p>
-              <div class="row">
-                <a
-                  class="btn"
-                  data-advance="2"
-                  target="_blank"
-                  rel="noreferrer"
-                  href="https://console.cloud.google.com/projectcreate"
-                  >Open project creation</a
-                >
-              </div>
-            </li>
-
-            <li class="step" data-step="3">
-              <div class="step-head">
-                <span class="step-no">3</span><strong>Enable the Google Drive API</strong>
-              </div>
-              <p class="sub">
-                Press Enable on the page that opens. Without this the client exists but every
-                call is refused.
-              </p>
-              <div class="row">
-                <a
-                  class="btn"
-                  data-advance="3"
-                  target="_blank"
-                  rel="noreferrer"
-                  href="https://console.cloud.google.com/apis/library/drive.googleapis.com"
-                  >Open the Drive API page</a
-                >
-              </div>
-            </li>
-
-            <li class="step" data-step="4">
-              <div class="step-head">
-                <span class="step-no">4</span><strong>Set up the consent screen</strong>
-              </div>
-              <p class="sub">
-                Three pages, in this order. <strong>Branding</strong>: an app name, a user support
-                email and a developer contact email, all required before publishing is allowed.
-                <strong>Data access</strong>: add the scope
-                <span class="mono">.../auth/drive.file</span>, the narrowest Drive scope there is.
-                <strong>Audience</strong>: set the user type, then press Publish app.
-              </p>
-              <p class="sub">
-                <strong>Do not leave it in Testing.</strong> Testing refuses every account outside
-                the test user list, which is what
-                <span class="mono">Error 403: access_denied</span> means, and consent granted in
-                Testing lapses after seven days. Publishing needs no review, because
-                <span class="mono">drive.file</span> is a non-sensitive scope. An unverified app
-                warning on first consent is expected and harmless here.
-              </p>
-              <div class="row">
-                <a
-                  class="btn"
-                  data-advance="4"
-                  target="_blank"
-                  rel="noreferrer"
-                  href="https://console.cloud.google.com/auth/branding"
-                  >Branding</a
-                >
-                <a
-                  class="btn"
-                  data-advance="4"
-                  target="_blank"
-                  rel="noreferrer"
-                  href="https://console.cloud.google.com/auth/scopes"
-                  >Data access</a
-                >
-                <a
-                  class="btn"
-                  data-advance="4"
-                  target="_blank"
-                  rel="noreferrer"
-                  href="https://console.cloud.google.com/auth/audience"
-                  >Audience and publishing</a
-                >
-              </div>
-            </li>
-
-            <li class="step" data-step="5">
-              <div class="step-head">
-                <span class="step-no">5</span><strong>Create the OAuth client</strong>
-              </div>
-              <p class="sub">
-                Create a client of application type <strong>Chrome Extension</strong> and paste
-                the extension ID from step 1. There is no redirect URI to fill in and
-                <strong>no client secret</strong>: Chrome holds the tokens itself, which is also
-                why connecting later opens no sign-in page and puts nothing in your cookie jar.
-              </p>
-              <div class="row">
-                <a
-                  class="btn"
-                  data-advance="5"
-                  target="_blank"
-                  rel="noreferrer"
-                  href="https://console.cloud.google.com/auth/clients"
-                  >Open clients</a
-                >
-              </div>
-            </li>
-
-            <li class="step" data-step="6">
-              <div class="step-head">
-                <span class="step-no">6</span><strong>Paste the client ID and rebuild</strong>
-              </div>
-              <p class="sub">
-                Chrome reads the client ID from the extension manifest and offers no way to hand
-                it one at runtime, so this is the single step that needs a build. Paste the ID,
-                press Save, then run the command it gives you and reload the extension at
-                <span class="mono">chrome://extensions</span>.
-              </p>
-              <div class="row">
-                <input type="text" id="client-id" placeholder="Client ID" class="grow" />
-                <button class="primary" id="save-client-id">Save</button>
-              </div>
-              <div class="row" id="command-row" hidden>
-                <code class="mono grow" id="build-command"></code>
-                <button id="copy-command">Copy</button>
-              </div>
-              <div class="warn" id="rebuild-note" hidden>
-                The client ID is saved but not in the running extension yet. Run the command
-                above, then reload the extension.
-              </div>
-            </li>
-
-            <li class="step" data-step="7">
-              <div class="step-head">
-                <span class="step-no">7</span><strong>Connect and upload</strong>
-              </div>
-              <p class="sub">
-                Chrome asks for consent once, using the account this profile is already signed
-                into. No sign-in page opens, so the isolation gate has nothing to intercept and
-                nothing lands in the cookie jar of whichever container is mounted.
-              </p>
-              <div class="row">
-                <button class="primary" id="connect-drive">Connect and upload now</button>
-              </div>
-            </li>
-          </ol>
-
-          <h3>File export and import</h3>
           <div class="card">
             <label class="check">
               <input type="checkbox" id="include-cookies" />

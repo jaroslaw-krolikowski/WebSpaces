@@ -52,9 +52,9 @@ time. This is a property of the platform, not of the implementation.
    turns any background failure into a throw. A button that does nothing is a bug.
 3. **A tab that cannot prove its container is frozen, not guessed.** A frozen tab is blocked
    at the network layer. Never let it "probably" use the mounted session.
-4. **Cookies never leave the machine automatically.** The Drive backup holds configuration and
-   the tab tree only. File export can include cookies, but only behind an explicit opt-in and
-   a confirmation dialog.
+4. **Cookies never leave the machine automatically.** Chrome sync carries configuration only.
+   File export can include cookies, but only behind an explicit opt-in and a confirmation
+   dialog, because that file is something the user deliberately moves.
 5. **A realm contains only hosts shared across organisations.** Hosts whose name carries the
    organisation stay out. See `docs/03-realms.md` - this is the single most consequential
    design rule in the project.
@@ -88,26 +88,26 @@ time. This is a property of the platform, not of the implementation.
   without buying isolation.
 - Do not drop the `seeded` flag. Without it, deleting every realm resurrects the presets on
   the next state read.
-- Do not commit `extension-key.txt` or `extension-key.pem`. Both
-  are gitignored. Google Drive credentials live in storage.local and are never committed either.
-- **Do not bundle an OAuth client ID with the extension.** Every user registers their own, so
-  Drive access runs under their project, their quota and their responsibility. A shared client
-  ID would move all of that onto the maintainer. The guided setup exists to make that cheap.
+- **Do not add a cloud provider integration.** Google Drive was built and removed. Any provider
+  API needs a client ID, and a client ID belongs to someone: ship one and every user reaches the
+  cloud through the maintainer project and responsibility, or make each user register their own
+  and setup moves into a console outside the extension. For a store-published extension neither
+  is acceptable, and `chrome.storage.sync` already covers the configuration. Tabs and windows
+  belong in an export file the user controls. See `docs/05-backup.md` for the full account.
 - Do not let `pushToSync` write an unchanged payload. Applying a remote change saves local
   state, which triggers a push, which the other device applies - the two would bounce the same
   configuration forever. The equality check in `pushToSync` is what stops it, and the writer id
   in the metadata guards the same loop within one device.
-- **Do not replace `getAuthToken` with `launchWebAuthFlow`.** It was tried, to make the client id
-  pasteable at runtime, and it dragged in a Web application client type, a client secret, a
-  branding page, a publishing requirement, our own token refresh, and a bypass that opened the
-  isolation gate during sign-in. `getAuthToken` opens no page, so the gate has nothing to
-  intercept and no cookies reach the jar. The price is the client id living in the manifest,
-  which costs one build.
+- Do not reintroduce a bypass that opens the isolation gate. One existed while the Drive
+  sign-in page had to load, and a gate that can be switched off is a gate you cannot reason
+  about. Nothing in the extension needs to reach a realm host outside a container.
 
 ## Environment notes
 
-- The extension id of an unpacked extension depends on its directory path. Moving the project
-  changes the id and breaks the OAuth client binding in Google Cloud. `npm run key` pins the id
-  through a manifest key and removes that whole class of problem.
+- The extension id of an unpacked extension depends on its directory path, so it changes when
+  the project moves. Nothing depends on it any more, but it is worth knowing before something
+  starts to.
+- Icons are generated from `src/logo-webspaces.png` by `npm run icons`. Rerun it only when the
+  logo changes; the generated files are committed.
 - Bash heredocs in this environment mangle `\\` sequences and break on apostrophes in prose.
   Use the Write tool for files containing either.

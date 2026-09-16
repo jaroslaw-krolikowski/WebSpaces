@@ -14,16 +14,6 @@ import {
 } from "../shared/storage";
 import { COLOR_HEX, DEFAULT_CONTAINER_ID, GROUP_COLORS } from "../shared/types";
 import type { Container, GroupColor, Realm } from "../shared/types";
-import { BACKUP_ALARM, rescheduleBackup, runBackup, runScheduledBackup } from "./backup";
-import {
-  connect as driveConnect,
-  disconnect as driveDisconnect,
-  getPastedClientId,
-  isConfigured as driveConfigured,
-  isConnected as driveConnected,
-  manifestClientId,
-  savePastedClientId,
-} from "./drive";
 import { frozenCounts, refreshGate, scheduleGateRefresh } from "./gate";
 import { mountContainer, mountedContainer, noteCookieChange } from "./mount";
 import { applySnapshot, buildSnapshot } from "./snapshot";
@@ -49,7 +39,6 @@ async function bootstrap(): Promise<void> {
   await rebuildContextMenus();
   await applyRulesToOpenTabs();
   await refreshGate();
-  await rescheduleBackup();
   await pushToSync();
 }
 
@@ -79,10 +68,6 @@ function schedulePush(): void {
     void pushToSync();
   }, 1500);
 }
-
-chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name === BACKUP_ALARM) void runScheduledBackup();
-});
 
 /* --- Tab and group events --- */
 
@@ -626,49 +611,6 @@ async function handle(request: Request): Promise<unknown> {
       return { ok: true, navigated: Boolean(url) };
     }
 
-    case "saveBackup":
-      await saveState({ backup: request.backup });
-      await rescheduleBackup();
-      return { ok: true };
-
-    case "backupNow":
-      return runBackup();
-
-    case "backupConnect": {
-      // The consent window only ever opens from a click, never from the alarm.
-      await driveConnect();
-      await markSetup(7);
-      await runBackup();
-      return { ok: true };
-    }
-
-    case "backupDisconnect": {
-      await driveDisconnect();
-      const state = await loadState();
-      await saveState({
-        backup: { ...state.backup, enabled: false, lastError: null },
-        setup: { completed: Math.min(state.setup.completed, 6) },
-      });
-      await rescheduleBackup();
-      return { ok: true };
-    }
-
-    case "saveClientId": {
-      const clientId = request.clientId.trim();
-      if (!clientId.endsWith(".apps.googleusercontent.com")) {
-        throw new Error(
-          "That does not look like a Google client ID. It ends with .apps.googleusercontent.com.",
-        );
-      }
-      await savePastedClientId(clientId);
-      await markSetup(6);
-      return { ok: true };
-    }
-
-    case "advanceSetup":
-      await markSetup(request.step);
-      return { ok: true };
-
     case "clearSync":
       // Wipes only the shared copy. What is on this device stays untouched, so
       // this is a way out of a bad sync rather than a way to lose the setup.
@@ -717,28 +659,7 @@ async function buildOverview(): Promise<Overview> {
     state,
     activeTab,
     frozenCounts: await frozenCounts(),
-    drive: await driveStatus(),
   };
-}
-
-async function driveStatus(): Promise<Overview["drive"]> {
-  const pasted = await getPastedClientId();
-  const inManifest = manifestClientId();
-  return {
-    configured: driveConfigured(),
-    connected: await driveConnected(),
-    extensionId: chrome.runtime.id,
-    clientId: pasted,
-    // Entered but not live yet: the build and reload are still outstanding.
-    pendingRebuild: Boolean(pasted) && pasted !== inManifest,
-  };
-}
-
-/** Setup only ever moves forward, so a repeated click cannot walk it back. */
-async function markSetup(step: number): Promise<void> {
-  const state = await loadState();
-  if (state.setup.completed >= step) return;
-  await saveState({ setup: { completed: step } });
 }
 
 async function buildPendingInfo(tabId: number, fromPage?: string): Promise<PendingInfo> {

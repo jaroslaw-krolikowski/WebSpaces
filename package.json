@@ -9,12 +9,12 @@
     "dev": "node build.mjs --watch",
     "typecheck": "tsc --noEmit",
     "test": "node --test scripts/test-matching.mjs",
-    "key": "node scripts/make-key.mjs",
-    "client-id": "node scripts/set-client-id.mjs"
+    "icons": "node scripts/make-icons.mjs"
   },
   "devDependencies": {
     "@types/chrome": "^0.1.30",
     "esbuild": "^0.25.0",
+    "pngjs": "^7.0.0",
     "typescript": "^5.7.0"
   }
 }

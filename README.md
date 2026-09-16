@@ -162,19 +162,19 @@ unchanged. Check your version at `chrome://version`.
 
 ## Backup and sync
 
-Three paths, in order of how much they ask of you.
+Two mechanisms, and **neither asks you to set anything up**. No OAuth, no Google Cloud project,
+no account to connect.
 
-| Path | Setup | Carries | Good for |
-|---|---|---|---|
-| Chrome sync | none | containers, realms, rules, settings | the same setup on every machine |
-| Google Drive | one registration | the above plus windows and tabs | a real file, history, full restore |
-| File export | none | the above, cookies optional | moving between accounts, archiving |
+| Path | Carries | Runs |
+|---|---|---|
+| Chrome sync | containers, realms, rules, settings | automatically, on by default |
+| File export | the above plus windows and tabs, cookies optional | when you press the button |
 
 ### Chrome sync
 
-**On by default and free of setup.** `chrome.storage.sync` carries the configuration over the
-account your Chrome profile is already signed into - no OAuth, no Cloud project, no client ID.
-For most people this is the whole answer.
+`chrome.storage.sync` carries the configuration over the account your Chrome profile is already
+signed into. That is the mechanism Chrome provides for exactly this, and it needs nothing from
+you: no credentials, no consent screen, no third party holding a key to your data.
 
 It leaves out windows and tabs, which are specific to a machine, and cookies, which never leave
 the device automatically. The shared copy is capped at 100 KB; a realistic configuration is
@@ -182,78 +182,34 @@ around 5 KB, and if a write ever fails the reason appears in settings rather tha
 
 Conflicts resolve as last writer wins over the whole configuration.
 
-### Google Drive backup
-
-Adds what sync leaves out: windows and tabs, an actual file you can open and keep, and version
-history. It uploads into a **`WebSpaces`** folder on the Drive of the signed-in account and
-**never includes cookies** - the file lands in the cloud unattended, and sign-in sessions in
-plain text would give anyone who takes over that Google account entry to every tenant without a
-password and without MFA.
-
-Authentication follows the
-[official Chrome guide](https://developer.chrome.com/docs/extensions/how-to/integrate/oauth):
-`chrome.identity.getAuthToken` with a **Chrome Extension** OAuth client. There is **no client
-secret** and no sign-in page - Chrome holds the tokens itself. Two consequences worth knowing:
-the isolation gate has nothing to intercept, and nothing lands in the cookie jar to pollute the
-mounted container vault.
-
-The one cost is that Chrome reads the client ID from the **manifest** and offers no way to hand
-it one at runtime, so finishing the setup takes a rebuild. The panel hands you the exact command.
-
-#### Why you register your own credentials
-
-Google has no registration-free way into a Drive: every call needs a client ID, and a client ID
-needs a Cloud Console project. WebSpaces ships no client ID of its own on purpose. Bundling one
-would route every user through a single maintainer project, under that maintainer quota and that
-maintainer responsibility. Registering your own takes five minutes once and keeps the access
-yours.
-
-If you use WebSpaces on more than one machine, run `npm run key` first. It pins the extension ID
-so a single registration stays valid everywhere, instead of changing whenever the project folder
-moves. Both key files are gitignored.
-
-### Setup
-
-**Do it in the settings page.** Open **Settings > Backup & Sync**. Every step carries a one line
-reason, a button that opens the page it needs, and marks itself done as you go. The list below is
-the same thing in text form.
-
-1. Copy the **extension ID** shown in step 1.
-2. In [Google Cloud Console](https://console.cloud.google.com) create a project.
-3. Enable the **Google Drive API**.
-4. Consent screen, three pages in order. **Branding**: app name, user support email, developer
-   contact email. **Data access**: add the scope `https://www.googleapis.com/auth/drive.file`.
-   **Audience**: set the user type, then press **Publish app**.
-5. **Clients > Create**, application type **Chrome Extension**, paste the extension ID. No
-   redirect URI and no secret are involved.
-6. Paste the **client ID** into the panel, press Save, then run the command it gives you:
-   `npm run client-id -- <client-id>`. Reload the extension at `chrome://extensions`.
-7. Press **Connect and upload now** and accept the consent prompt.
-
-**Publish the app, do not leave it in Testing.** In Testing the consent screen refuses every
-account outside the test user list, which shows up as `Error 403: access_denied`, and consent
-granted in Testing lapses after seven days. Publishing needs no review here: `drive.file` is a
-[non-sensitive scope](https://developers.google.com/identity/protocols/oauth2/production-readiness/sensitive-scope-verification).
-An unverified app warning on first consent is expected and harmless.
-
-The `drive.file` scope is the narrowest available: the extension sees **only files it created
-itself** and has no right to read the rest of your Drive. One side effect - a `WebSpaces` folder
-you made by hand is invisible to it, so it will create its own.
-
-**The ID of an extension loaded from a directory depends on that path.** Moving the project
-changes the ID and breaks the OAuth binding. Run `npm run key` once to pin it, and a single
-registration stays valid across moves and machines.
-
-Backups overwrite the same file, so version history stays on the Drive side instead of piling
-up dated copies. The alarm never prompts for consent on its own: if access lapses, the reason
-shows up in settings and **Upload now** resumes.
-## File export and import
+### File export and import
 
 **Settings > Backup & Sync > Export to JSON** saves containers, realms, rules and the window/tab
 tree. Import merges configuration by `id` and optionally restores windows.
 
+Put the file in a folder your cloud drive already syncs and you have an off-machine backup
+without granting anything access to your account.
+
 A separate toggle adds **cookies** to the file. It is off by default and should stay that way:
-the file then holds live sign-in sessions in plain text.
+the file then holds live sign-in sessions in plain text, and anyone who gets it enters those
+accounts without a password and without MFA.
+
+### Why there is no cloud integration
+
+An earlier version uploaded to Google Drive. It was removed, and the reasoning is worth keeping
+because it applies to any cloud provider.
+
+Every call to a provider API needs a client ID, and a client ID belongs to **someone**. There
+are two models and no third:
+
+1. **The extension ships one.** Users press Connect and nothing else, but every user then reaches
+   the cloud through the maintainer project, under that quota and that responsibility.
+2. **Each user registers their own.** Nobody else carries the risk, but setup moves into a
+   console outside the extension, which is unreasonable to ask of anyone installing from a store.
+
+For an extension meant to be published, neither is acceptable, and `chrome.storage.sync` covers
+the part that actually matters - the configuration you cannot recreate from memory. Tabs and
+windows are recoverable by hand and belong in an export file you control.
 
 ## Development
 
@@ -261,7 +217,6 @@ the file then holds live sign-in sessions in plain text.
 npm run dev        # esbuild in watch mode
 npm run typecheck  # tsc --noEmit, strict
 npm test           # host, cookie and rule matching tests
-npm run key        # pin the extension id, once per installation
 ```
 
 Tests cover the trickiest part - matching cookies to realms. The critical case: `ESTSAUTH` sits
@@ -273,7 +228,7 @@ in both directions or the tenant session leaks despite the swap.
 ```
 src/shared/     types, host and rule matching, storage layer, message protocol
 src/background/ vault - mount (switching) - gate (DNR) - tabs (container and group)
-                snapshot (JSON) - drive + backup (Google Drive) - index (wiring)
+                snapshot (JSON) - sync (chrome.storage.sync) - index (wiring)
 src/ui/         popup - options - frozen (container picker)
 scripts/        icon generator, tests
 docs/           architecture and design notes

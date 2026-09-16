@@ -38,7 +38,7 @@ What the tests protect:
 ## What cannot be verified outside the browser
 
 Everything that touches `chrome.*`: the DNR gate, cookie swapping, tab group adoption, context
-menus, and every Drive call. Those need the extension loaded. When changing any of them, reload
+menus, and configuration sync. Those need the extension loaded. When changing any of them, reload
 the extension and check the service worker console at `chrome://extensions`.
 
 The gate logs a line whenever it falls back to the simpler rule set, which is the first thing to

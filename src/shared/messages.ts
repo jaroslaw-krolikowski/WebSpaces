@@ -1,4 +1,4 @@
-import type { BackupState, Container, Realm, Rule, Settings, State } from "./types";
+import type { Container, Realm, Rule, Settings, State } from "./types";
 
 /** A snapshot: containers, realms, rules, and the window/tab tree. */
 export interface Snapshot {
@@ -52,12 +52,6 @@ export type Request =
   | { type: "createRealm"; name: string; hosts: string[] }
   | { type: "deleteRealm"; realmId: string }
   | { type: "saveSettings"; settings: Settings }
-  | { type: "saveBackup"; backup: BackupState }
-  | { type: "backupNow" }
-  | { type: "backupConnect" }
-  | { type: "backupDisconnect" }
-  | { type: "saveClientId"; clientId: string }
-  | { type: "advanceSetup"; step: number }
   | { type: "clearSync" }
   | { type: "openInContainer"; url: string; containerId: string }
   // The url comes from the address of the picker page itself: the gate appends
@@ -72,22 +66,6 @@ export interface Overview {
   activeTab: TabStatus | null;
   /** How many tabs are currently frozen, per realm. */
   frozenCounts: Record<string, number>;
-  drive: DriveStatus;
-}
-
-export interface DriveStatus {
-  /** The manifest carries a client id, so Chrome can ask for a token. */
-  configured: boolean;
-  /** Consent has been granted at least once. */
-  connected: boolean;
-  extensionId: string;
-  /** What the user typed into the panel, to prefill the field. */
-  clientId: string;
-  /**
-   * A client id was entered but is not in the running manifest yet, which means
-   * the build and reload still have to happen.
-   */
-  pendingRebuild: boolean;
 }
 
 /** Data for the container picker that a blocked tab lands on. */

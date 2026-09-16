@@ -8,8 +8,8 @@ import type { Container, Realm, Rule, Settings, SyncState } from "../shared/type
  * profile is already signed into, with no OAuth, no Google Cloud project and no
  * client id. It only covers configuration, which is the part that belongs on
  * every machine. Windows and tabs stay out because they are device specific and
- * would not fit the quota anyway, and cookies stay out for the same reason they
- * stay out of the Drive backup.
+ * would not fit the quota anyway, and cookies never leave the device
+ * automatically at all.
  *
  * Conflict resolution is last writer wins over the whole payload. For a personal
  * tool that is predictable enough, and anything finer would need per-field

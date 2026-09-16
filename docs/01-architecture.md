@@ -13,8 +13,7 @@
 | `src/background/gate.ts` | Builds and applies the `declarativeNetRequest` session rules. |
 | `src/background/tabs.ts` | Container to tab-group binding, group adoption, tab assignment. |
 | `src/background/snapshot.ts` | Builds and applies JSON snapshots. |
-| `src/background/drive.ts` | Google Drive REST calls and OAuth token handling. |
-| `src/background/backup.ts` | Backup orchestration and the alarm schedule. |
+| `src/background/sync.ts` | Configuration sync through chrome.storage.sync. |
 | `src/background/index.ts` | All event listeners and the message router. The only place that wires modules together. |
 | `src/ui/` | `popup`, `options`, `frozen` (the container picker), plus `dom.ts` helpers. |
 

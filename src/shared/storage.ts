@@ -1,10 +1,8 @@
 import {
   BUILTIN_REALMS,
-  DEFAULT_BACKUP,
   DEFAULT_CONTAINER,
   DEFAULT_CONTAINER_ID,
   DEFAULT_SETTINGS,
-  DEFAULT_SETUP,
   DEFAULT_SYNC,
 } from "./types";
 import type { State, StoredCookie, Vault } from "./types";
@@ -35,9 +33,7 @@ export async function loadState(): Promise<State> {
     rules: stored?.rules ?? [],
     settings: { ...DEFAULT_SETTINGS, ...stored?.settings },
     mounted: stored?.mounted ?? {},
-    backup: { ...DEFAULT_BACKUP, ...stored?.backup },
     sync: { ...DEFAULT_SYNC, ...stored?.sync },
-    setup: { ...DEFAULT_SETUP, ...stored?.setup },
     seeded,
   };
 }
