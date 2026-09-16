@@ -5,19 +5,6 @@ import { resolveAllTabs } from "./tabs";
 
 const FROZEN_PAGE = "/ui/frozen.html";
 
-/**
- * Connecting Google Drive opens a real sign-in page, and that page sits on a
- * realm host. Without opening the gate for the duration, our own redirect would
- * send the consent window to the container picker and the flow could never
- * finish. The bypass lasts seconds and is always paired with a refresh in a
- * finally block, so it cannot be left on.
- */
-let authBypass = false;
-
-export function setAuthBypass(on: boolean): void {
-  authBypass = on;
-}
-
 /** DNR has no shorthand for "any resource", so the types have to be listed. */
 const ALL_RESOURCES = [
   "main_frame",
@@ -151,16 +138,6 @@ function buildRules(
       });
     }
 
-    // Highest priority so it also lifts the block above, for the few seconds the
-    // Google consent window is open.
-    if (authBypass) {
-      rules.push({
-        id: nextId++,
-        priority: 4,
-        action: { type: "allow" },
-        condition: { requestDomains, resourceTypes: ALL_RESOURCES },
-      });
-    }
   }
 
   return rules as chrome.declarativeNetRequest.Rule[];

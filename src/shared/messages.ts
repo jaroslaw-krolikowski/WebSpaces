@@ -56,7 +56,7 @@ export type Request =
   | { type: "backupNow" }
   | { type: "backupConnect" }
   | { type: "backupDisconnect" }
-  | { type: "saveDriveCredentials"; clientId: string; clientSecret: string }
+  | { type: "saveClientId"; clientId: string }
   | { type: "advanceSetup"; step: number }
   | { type: "clearSync" }
   | { type: "openInContainer"; url: string; containerId: string }
@@ -76,15 +76,18 @@ export interface Overview {
 }
 
 export interface DriveStatus {
-  /** Both credentials are saved. */
+  /** The manifest carries a client id, so Chrome can ask for a token. */
   configured: boolean;
-  /** A refresh token is held, so uploads can run unattended. */
+  /** Consent has been granted at least once. */
   connected: boolean;
-  /** Shown so it can be pasted into the Google Cloud client. */
-  redirectUri: string;
   extensionId: string;
-  /** Echoed back to prefill the field; the secret never leaves the background. */
+  /** What the user typed into the panel, to prefill the field. */
   clientId: string;
+  /**
+   * A client id was entered but is not in the running manifest yet, which means
+   * the build and reload still have to happen.
+   */
+  pendingRebuild: boolean;
 }
 
 /** Data for the container picker that a blocked tab lands on. */

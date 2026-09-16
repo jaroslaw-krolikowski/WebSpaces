@@ -8,9 +8,9 @@ let state: State;
 let drive: DriveStatus = {
   configured: false,
   connected: false,
-  redirectUri: "",
   extensionId: "",
   clientId: "",
+  pendingRebuild: false,
 };
 
 /**
@@ -471,8 +471,12 @@ function renderBackup(): void {
 /** Marks progress through the setup list and fills in the values it shows. */
 function renderSetup(): void {
   el("ext-id").textContent = drive.extensionId;
-  el("redirect-uri").textContent = drive.redirectUri;
   el<HTMLInputElement>("client-id").value = drive.clientId;
+
+  // The command is only useful once there is an id to put in it.
+  el("command-row").hidden = !drive.clientId;
+  el("build-command").textContent = `npm run client-id -- ${drive.clientId}`;
+  el("rebuild-note").hidden = !drive.pendingRebuild;
 
   // Signing into Google Cloud passes through accounts.google.com, so the gate
   // may well interrupt with the picker. Warn only when that host is isolated.
@@ -513,22 +517,20 @@ el("copy-id").addEventListener("click", () => {
   });
 });
 
-el("copy-redirect").addEventListener("click", () => {
+el("copy-command").addEventListener("click", () => {
   run(async () => {
-    await navigator.clipboard.writeText(drive.redirectUri);
-    status("Redirect URI copied. Paste it into the OAuth client.");
+    await navigator.clipboard.writeText(el("build-command").textContent ?? "");
+    status("Command copied. Run it in the project folder, then reload the extension.");
   });
 });
 
-el("save-credentials").addEventListener("click", () => {
+el("save-client-id").addEventListener("click", () => {
   const clientId = el<HTMLInputElement>("client-id").value;
-  const secretField = el<HTMLInputElement>("client-secret");
   run(async () => {
     clearStatus();
-    await send({ type: "saveDriveCredentials", clientId, clientSecret: secretField.value });
-    secretField.value = "";
+    await send({ type: "saveClientId", clientId });
     await load();
-    status("Credentials saved on this device. Press Connect in step 7.");
+    status("Saved. Run the command below, then reload the extension at chrome://extensions.");
   });
 });
 

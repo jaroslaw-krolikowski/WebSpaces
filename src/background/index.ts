@@ -18,11 +18,11 @@ import { BACKUP_ALARM, rescheduleBackup, runBackup, runScheduledBackup } from ".
 import {
   connect as driveConnect,
   disconnect as driveDisconnect,
-  getAuth as driveAuth,
+  getPastedClientId,
   isConfigured as driveConfigured,
   isConnected as driveConnected,
-  redirectUri as driveRedirectUri,
-  saveCredentials as saveDriveCredentials,
+  manifestClientId,
+  savePastedClientId,
 } from "./drive";
 import { frozenCounts, refreshGate, scheduleGateRefresh } from "./gate";
 import { mountContainer, mountedContainer, noteCookieChange } from "./mount";
@@ -653,11 +653,14 @@ async function handle(request: Request): Promise<unknown> {
       return { ok: true };
     }
 
-    case "saveDriveCredentials": {
-      if (!request.clientId.trim() || !request.clientSecret.trim()) {
-        throw new Error("Both the client ID and the client secret are required.");
+    case "saveClientId": {
+      const clientId = request.clientId.trim();
+      if (!clientId.endsWith(".apps.googleusercontent.com")) {
+        throw new Error(
+          "That does not look like a Google client ID. It ends with .apps.googleusercontent.com.",
+        );
       }
-      await saveDriveCredentials(request.clientId, request.clientSecret);
+      await savePastedClientId(clientId);
       await markSetup(6);
       return { ok: true };
     }
@@ -714,13 +717,20 @@ async function buildOverview(): Promise<Overview> {
     state,
     activeTab,
     frozenCounts: await frozenCounts(),
-    drive: {
-      configured: await driveConfigured(),
-      connected: await driveConnected(),
-      redirectUri: driveRedirectUri(),
-      extensionId: chrome.runtime.id,
-      clientId: (await driveAuth()).clientId,
-    },
+    drive: await driveStatus(),
+  };
+}
+
+async function driveStatus(): Promise<Overview["drive"]> {
+  const pasted = await getPastedClientId();
+  const inManifest = manifestClientId();
+  return {
+    configured: driveConfigured(),
+    connected: await driveConnected(),
+    extensionId: chrome.runtime.id,
+    clientId: pasted,
+    // Entered but not live yet: the build and reload are still outstanding.
+    pendingRebuild: Boolean(pasted) && pasted !== inManifest,
   };
 }
 

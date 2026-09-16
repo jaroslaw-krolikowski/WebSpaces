@@ -190,10 +190,15 @@ history. It uploads into a **`WebSpaces`** folder on the Drive of the signed-in 
 plain text would give anyone who takes over that Google account entry to every tenant without a
 password and without MFA.
 
-Authentication is the OAuth authorisation code flow with PKCE, run through
-`chrome.identity.launchWebAuthFlow`. That is what lets the credentials be **pasted into the
-settings panel instead of built into the extension**: the tidier `getAuthToken` reads its client
-ID from the manifest, which would put setup back behind a rebuild.
+Authentication follows the
+[official Chrome guide](https://developer.chrome.com/docs/extensions/how-to/integrate/oauth):
+`chrome.identity.getAuthToken` with a **Chrome Extension** OAuth client. There is **no client
+secret** and no sign-in page - Chrome holds the tokens itself. Two consequences worth knowing:
+the isolation gate has nothing to intercept, and nothing lands in the cookie jar to pollute the
+mounted container vault.
+
+The one cost is that Chrome reads the client ID from the **manifest** and offers no way to hand
+it one at runtime, so finishing the setup takes a rebuild. The panel hands you the exact command.
 
 #### Why you register your own credentials
 
@@ -210,56 +215,38 @@ moves. Both key files are gitignored.
 ### Setup
 
 **Do it in the settings page.** Open **Settings > Backup & Sync**. Every step carries a one line
-reason, a button that opens the page it needs, and marks itself done as you go. **No rebuild is
-involved**: the credentials are pasted into the panel and stored on the device.
-
-The list below is the same thing in text form.
+reason, a button that opens the page it needs, and marks itself done as you go. The list below is
+the same thing in text form.
 
 1. Copy the **extension ID** shown in step 1.
 2. In [Google Cloud Console](https://console.cloud.google.com) create a project.
 3. Enable the **Google Drive API**.
-4. OAuth consent screen: **External** (or **Internal** with Workspace), scope
-   `https://www.googleapis.com/auth/drive.file`, then **press Publish app** on the Audience page.
-5. **Credentials > Create > OAuth client ID**, application type **Web application**, and add the
-   redirect URI shown in step 5, which is `https://<extension-id>.chromiumapp.org/`.
-6. Paste the **client ID** and **client secret** into the panel and press Save.
-7. Press **Connect and upload now** and accept the consent window.
+4. Consent screen, three pages in order. **Branding**: app name, user support email, developer
+   contact email. **Data access**: add the scope `https://www.googleapis.com/auth/drive.file`.
+   **Audience**: set the user type, then press **Publish app**.
+5. **Clients > Create**, application type **Chrome Extension**, paste the extension ID. No
+   redirect URI and no secret are involved.
+6. Paste the **client ID** into the panel, press Save, then run the command it gives you:
+   `npm run client-id -- <client-id>`. Reload the extension at `chrome://extensions`.
+7. Press **Connect and upload now** and accept the consent prompt.
 
 **Publish the app, do not leave it in Testing.** In Testing the consent screen refuses every
-account outside the test user list, which shows up as `Error 403: access_denied`, and refresh
-tokens issued in Testing **expire after seven days**, so unattended uploads would quietly stop
-every week. Publishing needs no review here: `drive.file` is a
+account outside the test user list, which shows up as `Error 403: access_denied`, and consent
+granted in Testing lapses after seven days. Publishing needs no review here: `drive.file` is a
 [non-sensitive scope](https://developers.google.com/identity/protocols/oauth2/production-readiness/sensitive-scope-verification).
-
-**It has to be the Web application type**, not Chrome Extension. Only the Web application type
-issues a client secret, and Google will not return a refresh token without one, so unattended
-uploads would stop working after an hour. The Chrome Extension type exists for
-`chrome.identity.getAuthToken`, which reads its client ID from the manifest and therefore needs
-a rebuild for every change.
-
-For an installed application the client secret is not a real secret: it identifies the project,
-it does not protect it. It is stored on this device only, and it never reaches the configuration
-sync, the backup file, or the repository. Google shows it right after the client is created and
-again on the client page under Additional information.
+An unverified app warning on first consent is expected and harmless.
 
 The `drive.file` scope is the narrowest available: the extension sees **only files it created
 itself** and has no right to read the rest of your Drive. One side effect - a `WebSpaces` folder
 you made by hand is invisible to it, so it will create its own.
-
-Two things the consent step does that are worth knowing. It **opens a real Google sign-in page**,
-which sits on a realm host, so WebSpaces lifts its own gate for those few seconds or the page
-would be redirected to the container picker and never finish. And signing in **writes Google
-cookies into whichever container is mounted**; that is harmless afterwards, because the stored
-refresh token is what keeps uploads working, but it is worth knowing where they landed.
 
 **The ID of an extension loaded from a directory depends on that path.** Moving the project
 changes the ID and breaks the OAuth binding. Run `npm run key` once to pin it, and a single
 registration stays valid across moves and machines.
 
 Backups overwrite the same file, so version history stays on the Drive side instead of piling
-up dated copies. The alarm never prompts for consent on its own: if access expires, the reason
+up dated copies. The alarm never prompts for consent on its own: if access lapses, the reason
 shows up in settings and **Upload now** resumes.
-
 ## File export and import
 
 **Settings > Backup & Sync > Export to JSON** saves containers, realms, rules and the window/tab

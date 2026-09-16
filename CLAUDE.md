@@ -97,9 +97,12 @@ time. This is a property of the platform, not of the implementation.
   state, which triggers a push, which the other device applies - the two would bounce the same
   configuration forever. The equality check in `pushToSync` is what stops it, and the writer id
   in the metadata guards the same loop within one device.
-- Do not call `setAuthBypass(true)` outside a `try/finally` that turns it off and refreshes the
-  gate. It opens the gate for every realm host, and leaving it on would silently disable
-  isolation. It exists only because the Drive consent page sits on a realm host.
+- **Do not replace `getAuthToken` with `launchWebAuthFlow`.** It was tried, to make the client id
+  pasteable at runtime, and it dragged in a Web application client type, a client secret, a
+  branding page, a publishing requirement, our own token refresh, and a bypass that opened the
+  isolation gate during sign-in. `getAuthToken` opens no page, so the gate has nothing to
+  intercept and no cookies reach the jar. The price is the client id living in the manifest,
+  which costs one build.
 
 ## Environment notes
 

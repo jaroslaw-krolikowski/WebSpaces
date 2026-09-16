@@ -5,6 +5,8 @@ import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 const watch = process.argv.includes("--watch");
 const outdir = "dist";
 const EXTENSION_KEY_FILE = "extension-key.txt";
+const CLIENT_ID_FILE = "google-client-id.txt";
+const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
 
 await rm(outdir, { recursive: true, force: true });
 await mkdir(outdir, { recursive: true });
@@ -16,7 +18,9 @@ await mkdir(outdir, { recursive: true });
  */
 async function readLocal(file) {
   try {
-    return (await readFile(file, "utf8")).trim();
+    // A byte order mark would end up inside the client id and break the token
+    // request, so it is stripped before anything else looks at the value.
+    return (await readFile(file, "utf8")).replace(/^﻿/, "").trim();
   } catch {
     return "";
   }
@@ -31,7 +35,13 @@ async function writeManifest() {
   const extensionKey = await readLocal(EXTENSION_KEY_FILE);
   if (extensionKey) manifest.key = extensionKey;
 
+  // getAuthToken reads the client id from the manifest and offers no runtime
+  // alternative, so this is the one value that has to be baked in at build time.
+  const clientId = process.env.GOOGLE_CLIENT_ID?.trim() || (await readLocal(CLIENT_ID_FILE));
+  if (clientId) manifest.oauth2 = { client_id: clientId, scopes: [DRIVE_SCOPE] };
+
   await writeFile(`${outdir}/manifest.json`, `${JSON.stringify(manifest, null, 2)}\n`);
+  return Boolean(clientId);
 }
 
 /** Assets copied to the output directory unchanged. */
@@ -83,5 +93,9 @@ if (watch) {
       ? "Extension ID: pinned by the manifest key."
       : "Extension ID: derived from the folder path (run npm run key to pin it).",
   );
-  console.log("Google Drive: credentials are entered in the settings page, not at build time.");
+  console.log(
+    (await readLocal(CLIENT_ID_FILE)) || process.env.GOOGLE_CLIENT_ID
+      ? "Google Drive: client id injected into the manifest."
+      : `Google Drive: no client id yet (expected in ${CLIENT_ID_FILE}).`,
+  );
 }

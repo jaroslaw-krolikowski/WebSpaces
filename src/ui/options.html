@@ -192,10 +192,10 @@
             in a new tab.
           </p>
           <div class="warn" id="setup-realm-note" hidden>
-            Signing into Google Cloud goes through
+            Opening the Google Cloud pages below may pass through
             <span class="mono">accounts.google.com</span>, which sits in your Google realm. If the
             container picker appears, choose the container holding the Google account you want to
-            use for backups.
+            use for backups. Connecting in step 7 does not go through that page at all.
           </div>
 
           <ol class="steps" id="setup-steps">
@@ -204,10 +204,10 @@
                 <span class="step-no">1</span><strong>Copy the extension ID</strong>
               </div>
               <p class="sub">
-                Google ties the credentials to this exact extension. By default the ID is derived
-                from the folder the extension loads from, so it changes if you move the project
-                and differs on another machine. Running <span class="mono">npm run key</span>
-                once pins it for good, which keeps a single registration valid everywhere.
+                Google ties the client to this exact extension. By default the ID is derived from
+                the folder the extension loads from, so it changes if you move the project and
+                differs on another machine. Running <span class="mono">npm run key</span> once
+                pins it for good, which keeps a single registration valid everywhere.
               </p>
               <div class="row">
                 <code class="mono grow" id="ext-id"></code>
@@ -240,7 +240,7 @@
                 <span class="step-no">3</span><strong>Enable the Google Drive API</strong>
               </div>
               <p class="sub">
-                Press Enable on the page that opens. Without this the credentials exist but every
+                Press Enable on the page that opens. Without this the client exists but every
                 call is refused.
               </p>
               <div class="row">
@@ -257,21 +257,22 @@
 
             <li class="step" data-step="4">
               <div class="step-head">
-                <span class="step-no">4</span><strong>Configure the consent screen</strong>
+                <span class="step-no">4</span><strong>Set up the consent screen</strong>
               </div>
               <p class="sub">
-                Choose External (or Internal on Workspace) and add the scope
-                <span class="mono">.../auth/drive.file</span>. It is the narrowest one available:
-                the extension sees only files it created itself and cannot read the rest of your
-                Drive.
+                Three pages, in this order. <strong>Branding</strong>: an app name, a user support
+                email and a developer contact email, all required before publishing is allowed.
+                <strong>Data access</strong>: add the scope
+                <span class="mono">.../auth/drive.file</span>, the narrowest Drive scope there is.
+                <strong>Audience</strong>: set the user type, then press Publish app.
               </p>
               <p class="sub">
-                <strong>Then press Publish app</strong> on the Audience page. Left in Testing, the
-                consent screen refuses every account that is not on the test user list, which is
-                the usual cause of <span class="mono">Error 403: access_denied</span> - and
-                refresh tokens issued in Testing expire after seven days, so unattended uploads
-                would quietly stop every week. Publishing needs no review here, because
-                <span class="mono">drive.file</span> is a non-sensitive scope.
+                <strong>Do not leave it in Testing.</strong> Testing refuses every account outside
+                the test user list, which is what
+                <span class="mono">Error 403: access_denied</span> means, and consent granted in
+                Testing lapses after seven days. Publishing needs no review, because
+                <span class="mono">drive.file</span> is a non-sensitive scope. An unverified app
+                warning on first consent is expected and harmless here.
               </p>
               <div class="row">
                 <a
@@ -279,8 +280,16 @@
                   data-advance="4"
                   target="_blank"
                   rel="noreferrer"
+                  href="https://console.cloud.google.com/auth/branding"
+                  >Branding</a
+                >
+                <a
+                  class="btn"
+                  data-advance="4"
+                  target="_blank"
+                  rel="noreferrer"
                   href="https://console.cloud.google.com/auth/scopes"
-                  >Open scopes</a
+                  >Data access</a
                 >
                 <a
                   class="btn"
@@ -288,7 +297,7 @@
                   target="_blank"
                   rel="noreferrer"
                   href="https://console.cloud.google.com/auth/audience"
-                  >Open audience and publishing</a
+                  >Audience and publishing</a
                 >
               </div>
             </li>
@@ -298,52 +307,44 @@
                 <span class="step-no">5</span><strong>Create the OAuth client</strong>
               </div>
               <p class="sub">
-                Create credentials and pick the application type
-                <strong>Web application</strong>. Add the address below as an authorised redirect
-                URI, then copy both the client ID and the client secret it hands back.
+                Create a client of application type <strong>Chrome Extension</strong> and paste
+                the extension ID from step 1. There is no redirect URI to fill in and
+                <strong>no client secret</strong>: Chrome holds the tokens itself, which is also
+                why connecting later opens no sign-in page and puts nothing in your cookie jar.
               </p>
-              <p class="sub">
-                <strong>Not the Chrome Extension type.</strong> That one issues no client secret,
-                and Google will not return a refresh token without one, so unattended uploads
-                would stop working after an hour. If you already made a Chrome Extension client,
-                leave it and create a Web application client next to it.
-              </p>
-              <div class="row">
-                <code class="mono grow" id="redirect-uri"></code>
-                <button id="copy-redirect">Copy</button>
-              </div>
               <div class="row">
                 <a
                   class="btn"
                   data-advance="5"
                   target="_blank"
                   rel="noreferrer"
-                  href="https://console.cloud.google.com/apis/credentials"
-                  >Open credentials</a
+                  href="https://console.cloud.google.com/auth/clients"
+                  >Open clients</a
                 >
               </div>
             </li>
 
             <li class="step" data-step="6">
               <div class="step-head">
-                <span class="step-no">6</span><strong>Paste the credentials</strong>
+                <span class="step-no">6</span><strong>Paste the client ID and rebuild</strong>
               </div>
               <p class="sub">
-                Google shows both right after the client is created, and again on the client
-                page under Additional information. Only a Web application client has a secret; if
-                the field is missing, go back to step 5 and check the application type.
-              </p>
-              <p class="sub">
-                They are stored on this device only and never reach the configuration sync, the
-                backup file, or the repository. For an installed application the secret is not a
-                real secret: it identifies the project, it does not protect it.
+                Chrome reads the client ID from the extension manifest and offers no way to hand
+                it one at runtime, so this is the single step that needs a build. Paste the ID,
+                press Save, then run the command it gives you and reload the extension at
+                <span class="mono">chrome://extensions</span>.
               </p>
               <div class="row">
                 <input type="text" id="client-id" placeholder="Client ID" class="grow" />
+                <button class="primary" id="save-client-id">Save</button>
               </div>
-              <div class="row">
-                <input type="text" id="client-secret" placeholder="Client secret" class="grow" />
-                <button class="primary" id="save-credentials">Save</button>
+              <div class="row" id="command-row" hidden>
+                <code class="mono grow" id="build-command"></code>
+                <button id="copy-command">Copy</button>
+              </div>
+              <div class="warn" id="rebuild-note" hidden>
+                The client ID is saved but not in the running extension yet. Run the command
+                above, then reload the extension.
               </div>
             </li>
 
@@ -352,14 +353,9 @@
                 <span class="step-no">7</span><strong>Connect and upload</strong>
               </div>
               <p class="sub">
-                A Google consent window opens once. WebSpaces lifts its own network gate for
-                those few seconds, otherwise the sign-in page would be redirected to the container
-                picker and the flow could never finish.
-              </p>
-              <p class="sub">
-                The sign-in also writes Google cookies into whichever container is mounted right
-                now. That is harmless afterwards, since the stored refresh token is what keeps
-                uploads working, but it is worth knowing where those cookies landed.
+                Chrome asks for consent once, using the account this profile is already signed
+                into. No sign-in page opens, so the isolation gate has nothing to intercept and
+                nothing lands in the cookie jar of whichever container is mounted.
               </p>
               <div class="row">
                 <button class="primary" id="connect-drive">Connect and upload now</button>

@@ -67,38 +67,33 @@ the second:
 The settings page walks through model 2 step by step, so the cost is a guided five minutes
 rather than a documentation hunt.
 
-### Why launchWebAuthFlow rather than getAuthToken
+### Authentication
 
-`chrome.identity.getAuthToken` is the tidier API: no sign-in page, nothing written to the cookie
-jar, and Chrome manages the token. It reads the client ID from the **manifest**, though, which
-means credentials can only arrive at build time. Asking every user to edit a file and rebuild is
-not a setup flow.
+This follows the [official Chrome guide](https://developer.chrome.com/docs/extensions/how-to/integrate/oauth):
+`chrome.identity.getAuthToken` against a **Chrome Extension** OAuth client. No client secret
+exists for that client type, no redirect URI is configured, and Chrome owns the token lifecycle.
 
-`launchWebAuthFlow` lets us build the authorisation URL ourselves, so the client ID and secret
-live in storage and can be pasted into the panel. The price is real and is handled explicitly:
+Two properties fall out of that and both matter here:
 
-- **It opens a genuine Google sign-in page**, which sits on a realm host. `setAuthBypass` lifts
-  the gate for the few seconds the consent window is open, always inside a `finally`, otherwise
-  our own redirect would send the consent page to the container picker.
-- **The sign-in writes Google cookies into the mounted container.** The panel says so rather
-  than silently reshuffling containers behind the user. It does not matter afterwards, since the
-  refresh token is what keeps uploads working.
-- **We manage tokens ourselves**: authorisation code with PKCE, a stored refresh token, and an
-  access token refreshed a minute before expiry.
+- **No sign-in page opens.** The exchange happens inside the browser, so the DNR gate has nothing
+  to intercept and the flow cannot be redirected to the container picker.
+- **Nothing lands in the cookie jar**, so connecting cannot pollute the vault of whichever
+  container is mounted.
 
-The OAuth client is therefore a **Web application** type with
-`https://<extension-id>.chromiumapp.org/` as the redirect URI, not the Chrome Extension type.
+The single cost is that the client ID has to sit in the manifest, because `getAuthToken` reads it
+from there and takes no runtime argument. Finishing the setup therefore ends with a rebuild. The
+panel generates the exact command, `npm run client-id -- <id>`, which writes the gitignored file
+and rebuilds in one step so the instruction is identical on PowerShell and on a POSIX shell.
 
-That distinction traps people, so it is worth stating plainly. A Chrome Extension client issues
-**only a client ID and no secret**, which suits `getAuthToken` because Chrome owns the token
-lifecycle and never exposes a refresh token. Google will not issue a refresh token without a
-client secret, and PKCE does not substitute for it on their endpoint, so a Chrome Extension
-client cannot drive unattended uploads through `launchWebAuthFlow`. Anyone following an older
-version of these instructions will have made the wrong client type and needs a new one.
+### A path that was tried and abandoned
 
-For an installed application that secret identifies the project rather than protecting it, which
-is why it is acceptable to keep it in local storage - but it is still kept out of the sync
-payload, out of the backup file and out of the repository.
+An earlier attempt used `launchWebAuthFlow` so the client ID could be pasted and used without a
+rebuild. It works, but the bill is long: a Web application client type, a client secret, a
+branding page, a publishing requirement, PKCE and token refresh written by hand, and a bypass
+that had to open the isolation gate for the duration of the sign-in page.
+
+Trading a documented one-line rebuild for a hand-rolled OAuth client and a hole in the gate is a
+bad deal. If someone proposes it again, this paragraph is the answer.
 
 ### Publishing status is not optional
 
@@ -107,7 +102,7 @@ one that bites late:
 
 - In Testing, Google refuses every account outside the test user list. That is what
   `Error 403: access_denied` means at the consent step, with correct request parameters.
-- **Refresh tokens issued in Testing expire after seven days.** Unattended uploads would work,
+- **Consent granted in Testing lapses after seven days.** Unattended uploads would work,
   then silently stop every week, which is a far worse failure than never starting.
 
 Publishing costs nothing here. `drive.file` is a non-sensitive scope, so it needs no security
@@ -118,7 +113,7 @@ because an opaque 403 sends people looking in the wrong place.
 
 Steps two to five happen inside Google Cloud and cannot be observed from the extension, so the
 click that opens each page is what advances the list. Steps six and seven advance on real state:
-credentials saved, and a refresh token held. Progress only moves forward, so clicking a step
+a client ID saved, and consent granted. Progress only moves forward, so clicking a step
 again never walks it back.
 
 ### Pinning the extension ID
