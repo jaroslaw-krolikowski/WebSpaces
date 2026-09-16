@@ -213,6 +213,20 @@ windows are recoverable by hand and belong in an export file you control.
 
 ## Distribution
 
+### On another machine
+
+Pushing a version tag builds the extension on GitHub and attaches the zip to a release, so a
+second machine needs neither a clone nor Node:
+
+```bash
+git tag v0.1.0 && git push origin v0.1.0
+```
+
+Then download the zip from the releases page, unzip it, and load it unpacked. `dist/` is not
+committed, so cloning the repository instead means `npm install && npm run build` first.
+
+### Building the archive yourself
+
 ```bash
 npm run package
 ```

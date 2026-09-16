@@ -1,0 +1,30 @@
+# Publishes a downloadable build whenever a version tag is pushed, so a second
+# machine needs neither a clone nor Node: download the zip, unzip, load unpacked.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run package
+
+      # gh is preinstalled on the runner, so no third party action is involved.
+      - run: gh release create "$GITHUB_REF_NAME" release/*.zip --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}
