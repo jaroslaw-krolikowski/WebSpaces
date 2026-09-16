@@ -1,0 +1,18 @@
+{
+  "name": "webspaces",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Container tabs for Chrome, built on native tab groups",
+  "scripts": {
+    "build": "node build.mjs",
+    "dev": "node build.mjs --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test scripts/test-matching.mjs"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.1.30",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.7.0"
+  }
+}

@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>WebSpaces settings</title>
+    <link rel="stylesheet" href="ui.css" />
+  </head>
+  <body class="page">
+    <h1>WebSpaces</h1>
+    <p class="sub">
+      Containers built on Chrome tab groups. A container is a tab group with the same name.
+    </p>
+
+    <div class="warn" id="status" hidden></div>
+
+    <h2>Containers</h2>
+    <div id="containers" class="list"></div>
+    <div class="row" style="margin-top: 10px">
+      <input type="text" id="new-name" placeholder="Name of the new container" class="grow" />
+      <button class="primary" id="add-container">Add</button>
+    </div>
+
+    <h2>Opening rules</h2>
+    <p class="sub">
+      An address matching a pattern goes to the given container without asking, including
+      addresses on hosts that belong to no realm. A new rule also covers tabs already open.
+    </p>
+    <p class="sub">
+      A bare host means the whole site, subdomains included:
+      <span class="mono">example.com</span> also catches <span class="mono">www.example.com</span>.
+      You can paste an address straight from the address bar —
+      <span class="mono">https://</span> and a trailing slash are ignored. A star stands for any
+      fragment (<span class="mono">*.sharepoint.com</span>), and a slash narrows the rule to a
+      path (<span class="mono">admin.microsoft.com/*</span>).
+    </p>
+    <div id="rules" class="list"></div>
+    <div class="row" style="margin-top: 10px">
+      <input type="text" id="new-pattern" placeholder="e.g. admin.microsoft.com" class="grow" />
+      <select id="new-rule-container" style="width: auto"></select>
+      <button class="primary" id="add-rule">Add</button>
+    </div>
+
+    <h2>Isolation realms</h2>
+    <p class="sub">
+      A realm is a set of hosts whose cookies collide between containers. Only those are
+      swapped — hosts outside every realm work normally and are never frozen. The realms below
+      are a starting point: edit them, delete them, add your own.
+    </p>
+    <p class="sub">
+      List only hosts <strong>shared across organisations</strong>, where cookies actually
+      collide (<span class="mono">id.atlassian.com</span>,
+      <span class="mono">login.microsoftonline.com</span>). Addresses whose name carries the
+      organisation (<span class="mono">acme.atlassian.net</span>,
+      <span class="mono">acme.sharepoint.com</span>) belong outside the realm — they do not
+      collide, so they can run in several containers at once.
+    </p>
+    <div id="realms" class="list"></div>
+    <div class="row" style="margin-top: 10px">
+      <input type="text" id="new-realm" placeholder="Name of the new realm" class="grow" />
+      <button class="primary" id="add-realm">Add realm</button>
+    </div>
+    <div class="row" style="margin-top: 8px">
+      <select id="preset-realm" class="grow"></select>
+      <button id="add-preset">Add preset</button>
+    </div>
+
+    <h2>Behaviour</h2>
+    <div class="card">
+      <label class="check">
+        <input type="checkbox" id="auto-mount" />
+        <span>
+          Switch containers automatically when a tab is activated
+          <span class="sub">— clicking a tab of another container swaps cookies right away.</span>
+        </span>
+      </label>
+      <label class="check">
+        <input type="checkbox" id="show-interstitial" />
+        <span>
+          Ask which container when no rule matches
+          <span class="sub">— with this off the tab stays in its current container.</span>
+        </span>
+      </label>
+      <label class="check">
+        <input type="checkbox" id="clear-site-data" />
+        <span>
+          Clear realm site data when switching
+          <span class="sub">
+            — Microsoft portals keep access tokens in localStorage rather than cookies. Without
+            this, a tab can keep working on the token of the previous tenant for about an hour.
+            Turning it off speeds up switching at the cost of tightness.
+          </span>
+        </span>
+      </label>
+    </div>
+
+    <h2>Google Drive backup</h2>
+    <div class="card">
+      <div class="warn" id="drive-unconfigured" hidden>
+        This build has no OAuth client id, so Drive backup is disabled. Setup instructions are
+        in README, section Google Drive backup.
+      </div>
+      <label class="check">
+        <input type="checkbox" id="backup-enabled" />
+        <span>
+          Upload a backup automatically
+          <span class="sub">
+            — into the <span class="mono">WebSpaces</span> folder on the Drive of the account
+            signed into this Chrome profile. The backup holds containers, realms, rules, windows
+            and tabs. Cookies never go there.
+          </span>
+        </span>
+      </label>
+      <div class="row">
+        <label class="sub" for="backup-interval">Every</label>
+        <select id="backup-interval" style="width: auto">
+          <option value="15">15 minutes</option>
+          <option value="60">hour</option>
+          <option value="360">6 hours</option>
+          <option value="1440">day</option>
+        </select>
+        <button class="primary" id="backup-now">Upload now</button>
+        <button id="backup-disconnect">Disconnect account</button>
+      </div>
+      <div class="sub" id="backup-state" style="margin-top: 8px"></div>
+    </div>
+
+    <h2>File export and import</h2>
+    <div class="card">
+      <label class="check">
+        <input type="checkbox" id="include-cookies" />
+        <span>
+          Include cookies in the file
+          <span class="sub"
+            >— the file will then hold live sign-in sessions in plain text. Anyone who gets it
+            enters those accounts without a password and without MFA.</span
+          >
+        </span>
+      </label>
+      <div class="row">
+        <button class="primary" id="export">Export to JSON</button>
+        <button id="import">Load from file</button>
+      </div>
+      <label class="check" style="margin-top: 10px">
+        <input type="checkbox" id="restore-windows" />
+        <span>Also restore windows and tabs when loading</span>
+      </label>
+      <input type="file" id="file" accept="application/json,.json" hidden />
+    </div>
+
+    <script type="module" src="options.js"></script>
+  </body>
+</html>
