@@ -5,7 +5,7 @@ import { buildGroupMap } from "./tabs";
 
 const NO_GROUP = -1;
 const RESTORABLE = /^(https?|file):/i;
-const ACCEPTED_FORMATS = ["webspaces-snapshot", "tenantlock-snapshot", "omnitab-snapshot"];
+const SNAPSHOT_FORMAT = "webspaces-snapshot";
 
 /** Builds a snapshot: containers, realms, rules, and the window/tab tree. */
 export async function buildSnapshot(includeCookies: boolean): Promise<Snapshot> {
@@ -62,9 +62,7 @@ export async function buildSnapshot(includeCookies: boolean): Promise<Snapshot> 
 
 /** Loads a snapshot: merges the configuration, optionally restores windows. */
 export async function applySnapshot(snapshot: Snapshot, restoreWindows: boolean): Promise<void> {
-  // The older format names come from before the renames — files exported back
-  // then still have to load.
-  if (!ACCEPTED_FORMATS.includes(snapshot.format)) {
+  if (snapshot.format !== SNAPSHOT_FORMAT) {
     throw new Error("This is not a WebSpaces snapshot file.");
   }
 

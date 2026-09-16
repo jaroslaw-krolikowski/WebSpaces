@@ -2,8 +2,7 @@ import type { BackupState, Container, Realm, Rule, Settings, State } from "./typ
 
 /** A snapshot: containers, realms, rules, and the window/tab tree. */
 export interface Snapshot {
-  /** The other two values are pre-rename formats, still accepted on import. */
-  format: "webspaces-snapshot" | "tenantlock-snapshot" | "omnitab-snapshot";
+  format: "webspaces-snapshot";
   version: 1;
   savedAt: string;
   containers: Container[];

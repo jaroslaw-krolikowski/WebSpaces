@@ -45,5 +45,5 @@ breaks the OAuth binding and it has to be updated in Google Cloud.
 Import merges configuration by `id`, so entries from the file overwrite existing ones with the
 same id and everything else is kept. Restoring windows is optional and off by default.
 
-Snapshot files record their format name. Files written under the earlier project names
-(`tenantlock-snapshot`, `omnitab-snapshot`) are still accepted on import.
+Snapshot files record their format name and only `webspaces-snapshot` is accepted. There is no
+migration path from earlier names, because no such file was ever produced outside development.
