@@ -211,6 +211,24 @@ For an extension meant to be published, neither is acceptable, and `chrome.stora
 the part that actually matters - the configuration you cannot recreate from memory. Tabs and
 windows are recoverable by hand and belong in an export file you control.
 
+## Distribution
+
+```bash
+npm run package
+```
+
+Produces `release/webspaces-<version>.zip` with the manifest at the archive root. The same file
+serves both purposes:
+
+- **Install by hand.** Unzip it, then `chrome://extensions` → Developer mode → **Load unpacked**
+  → pick the unzipped folder.
+- **Publish.** Upload it in the Chrome Web Store developer dashboard.
+
+**There is deliberately no `.crx`.** Chrome refuses to install a signed package that did not come
+from the Web Store, failing with `CRX_REQUIRED_PROOF_MISSING`, so a `.crx` would only waste the
+time of whoever downloaded it. Sideloading a `.crx` works only through enterprise policy, which
+is a different deployment story.
+
 ## Development
 
 ```bash

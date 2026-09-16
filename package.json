@@ -9,11 +9,13 @@
     "dev": "node build.mjs --watch",
     "typecheck": "tsc --noEmit",
     "test": "node --test scripts/test-matching.mjs",
-    "icons": "node scripts/make-icons.mjs"
+    "icons": "node scripts/make-icons.mjs",
+    "package": "node scripts/package.mjs"
   },
   "devDependencies": {
     "@types/chrome": "^0.1.30",
     "esbuild": "^0.25.0",
+    "jszip": "^3.10.2",
     "pngjs": "^7.0.0",
     "typescript": "^5.7.0"
   }

@@ -8,9 +8,21 @@ npm run build      # bundle into dist/
 npm run dev        # esbuild watch mode
 npm run typecheck  # tsc --noEmit, strict
 npm test           # matching tests, no browser needed
+npm run icons      # regenerate icons from the logo
+npm run package    # release/webspaces-<version>.zip
 ```
 
 Load `dist/` through `chrome://extensions` → Developer mode → Load unpacked.
+
+## Packaging
+
+`npm run package` rebuilds and zips the **contents** of `dist/`, so the manifest sits at the
+archive root, which is what the Chrome Web Store expects. The same archive is what someone
+unzips to load the extension by hand.
+
+No `.crx` is produced. Chrome rejects a signed package that did not come from the Web Store with
+`CRX_REQUIRED_PROOF_MISSING`, so the format only has a use under enterprise policy. Shipping one
+would look like an install route and behave like a dead end.
 
 ## Build
 
