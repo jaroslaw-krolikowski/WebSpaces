@@ -1,11 +1,17 @@
 import { send } from "../shared/messages";
-import type { Overview, Snapshot } from "../shared/messages";
+import type { DriveStatus, Overview, Snapshot } from "../shared/messages";
 import { BUILTIN_REALMS, COLOR_HEX, DEFAULT_CONTAINER_ID, GROUP_COLORS } from "../shared/types";
 import type { Container, GroupColor, Realm, Rule, State } from "../shared/types";
 import { el, esc } from "./dom";
 
 let state: State;
-let driveReady = false;
+let drive: DriveStatus = {
+  configured: false,
+  connected: false,
+  redirectUri: "",
+  extensionId: "",
+  clientId: "",
+};
 
 /**
  * Every interface action goes through this wrapper. Errors coming from the
@@ -31,7 +37,7 @@ function clearStatus(): void {
 async function load(): Promise<void> {
   const overview = await send<Overview>({ type: "getOverview" });
   state = overview.state;
-  driveReady = overview.driveConfigured;
+  drive = overview.drive;
   renderContainers();
   renderRules();
   renderRealms();
@@ -434,17 +440,21 @@ for (const id of ["auto-mount", "show-interstitial", "clear-site-data"]) {
 /* --- Backup and sync --- */
 
 function renderBackup(): void {
-  el("drive-headline").textContent = driveReady ? "Connected build" : "Not configured yet";
+  el("drive-headline").textContent = drive.connected
+    ? "Connected"
+    : drive.configured
+      ? "Credentials saved, not connected"
+      : "Not configured yet";
   el<HTMLInputElement>("backup-enabled").checked = state.backup.enabled;
 
   for (const id of ["backup-enabled", "backup-interval", "backup-now", "backup-disconnect"]) {
-    el<HTMLInputElement>(id).disabled = !driveReady;
+    el<HTMLInputElement>(id).disabled = !drive.connected;
   }
   el<HTMLSelectElement>("backup-interval").value = String(state.backup.intervalMinutes);
 
   const node = el("backup-state");
   node.style.color = "";
-  if (!driveReady) {
+  if (!drive.connected) {
     node.textContent = "Finish the setup below to switch it on.";
     return;
   }
@@ -458,13 +468,11 @@ function renderBackup(): void {
     : "Nothing uploaded yet.";
 }
 
-/**
- * Walks the setup list forward. Steps one to six are done as soon as a client id
- * is present in the build, because that is the only observable proof that the
- * Google side was completed.
- */
+/** Marks progress through the setup list and fills in the values it shows. */
 function renderSetup(): void {
-  el("ext-id").textContent = chrome.runtime.id;
+  el("ext-id").textContent = drive.extensionId;
+  el("redirect-uri").textContent = drive.redirectUri;
+  el<HTMLInputElement>("client-id").value = drive.clientId;
 
   // Signing into Google Cloud passes through accounts.google.com, so the gate
   // may well interrupt with the picker. Warn only when that host is isolated.
@@ -472,33 +480,75 @@ function renderSetup(): void {
     realm.hosts.some((host) => host.includes("accounts.google.com")),
   );
 
+  const completed = state.setup.completed;
   for (const step of document.querySelectorAll<HTMLElement>(".step")) {
     const number = Number(step.dataset["step"]);
-    step.classList.toggle("done", driveReady && number <= 6);
-    step.classList.toggle("active", driveReady ? number === 7 : number === 1);
+    step.classList.toggle("done", number <= completed);
+    step.classList.toggle("active", number === completed + 1);
   }
 
-  el<HTMLButtonElement>("connect-drive").disabled = !driveReady;
+  el<HTMLButtonElement>("connect-drive").disabled = !drive.configured;
+}
+
+/**
+ * Steps two to five happen inside Google Cloud, which we cannot observe, so the
+ * click that opens the page is what moves the list along. Steps six and seven
+ * advance on real state instead, in the background handlers.
+ */
+for (const node of document.querySelectorAll<HTMLElement>("[data-advance]")) {
+  node.addEventListener("click", () => {
+    run(async () => {
+      await send({ type: "advanceSetup", step: Number(node.dataset["advance"]) });
+      await load();
+    });
+  });
 }
 
 el("copy-id").addEventListener("click", () => {
   run(async () => {
-    await navigator.clipboard.writeText(chrome.runtime.id);
+    await navigator.clipboard.writeText(drive.extensionId);
+    await send({ type: "advanceSetup", step: 1 });
+    await load();
     status("Extension ID copied to the clipboard.");
   });
 });
 
-function uploadNow(): void {
+el("copy-redirect").addEventListener("click", () => {
+  run(async () => {
+    await navigator.clipboard.writeText(drive.redirectUri);
+    status("Redirect URI copied. Paste it into the OAuth client.");
+  });
+});
+
+el("save-credentials").addEventListener("click", () => {
+  const clientId = el<HTMLInputElement>("client-id").value;
+  const secretField = el<HTMLInputElement>("client-secret");
+  run(async () => {
+    clearStatus();
+    await send({ type: "saveDriveCredentials", clientId, clientSecret: secretField.value });
+    secretField.value = "";
+    await load();
+    status("Credentials saved on this device. Press Connect in step 7.");
+  });
+});
+
+el("connect-drive").addEventListener("click", () => {
+  run(async () => {
+    status("Opening the Google consent window...");
+    await send({ type: "backupConnect" });
+    await load();
+    status("Connected, and the first backup is on your Drive.");
+  });
+});
+
+el("backup-now").addEventListener("click", () => {
   run(async () => {
     status("Uploading to Drive...");
     await send({ type: "backupNow" });
     await load();
     status("Backup uploaded to Google Drive.");
   });
-}
-
-el("backup-now").addEventListener("click", uploadNow);
-el("connect-drive").addEventListener("click", uploadNow);
+});
 
 for (const id of ["backup-enabled", "backup-interval"]) {
   el(id).addEventListener("change", () => {

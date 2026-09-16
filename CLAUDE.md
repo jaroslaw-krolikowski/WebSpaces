@@ -88,8 +88,8 @@ time. This is a property of the platform, not of the implementation.
   without buying isolation.
 - Do not drop the `seeded` flag. Without it, deleting every realm resurrects the presets on
   the next state read.
-- Do not commit `google-client-id.txt`, `extension-key.txt` or `extension-key.pem`. All three
-  are gitignored and injected at build time.
+- Do not commit `extension-key.txt` or `extension-key.pem`. Both
+  are gitignored. Google Drive credentials live in storage.local and are never committed either.
 - **Do not bundle an OAuth client ID with the extension.** Every user registers their own, so
   Drive access runs under their project, their quota and their responsibility. A shared client
   ID would move all of that onto the maintainer. The guided setup exists to make that cheap.
@@ -97,10 +97,14 @@ time. This is a property of the platform, not of the implementation.
   state, which triggers a push, which the other device applies - the two would bounce the same
   configuration forever. The equality check in `pushToSync` is what stops it, and the writer id
   in the metadata guards the same loop within one device.
+- Do not call `setAuthBypass(true)` outside a `try/finally` that turns it off and refreshes the
+  gate. It opens the gate for every realm host, and leaving it on would silently disable
+  isolation. It exists only because the Drive consent page sits on a realm host.
 
 ## Environment notes
 
 - The extension id of an unpacked extension depends on its directory path. Moving the project
-  changes the id and breaks the OAuth client binding in Google Cloud.
+  changes the id and breaks the OAuth client binding in Google Cloud. `npm run key` pins the id
+  through a manifest key and removes that whole class of problem.
 - Bash heredocs in this environment mangle `\\` sequences and break on apostrophes in prose.
   Use the Write tool for files containing either.

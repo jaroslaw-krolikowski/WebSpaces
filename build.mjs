@@ -4,9 +4,7 @@ import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 
 const watch = process.argv.includes("--watch");
 const outdir = "dist";
-const CLIENT_ID_FILE = "google-client-id.txt";
 const EXTENSION_KEY_FILE = "extension-key.txt";
-const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
 
 await rm(outdir, { recursive: true, force: true });
 await mkdir(outdir, { recursive: true });
@@ -16,11 +14,6 @@ await mkdir(outdir, { recursive: true });
  * repository - it comes from an environment variable or a file outside git.
  * Without it the extension works normally, only Drive backup stays disabled.
  */
-async function readClientId() {
-  if (process.env.GOOGLE_CLIENT_ID) return process.env.GOOGLE_CLIENT_ID.trim();
-  return readLocal(CLIENT_ID_FILE);
-}
-
 async function readLocal(file) {
   try {
     return (await readFile(file, "utf8")).trim();
@@ -37,9 +30,6 @@ async function writeManifest() {
   // ID from the directory path and the registration stops matching.
   const extensionKey = await readLocal(EXTENSION_KEY_FILE);
   if (extensionKey) manifest.key = extensionKey;
-
-  const clientId = await readClientId();
-  if (clientId) manifest.oauth2 = { client_id: clientId, scopes: [DRIVE_SCOPE] };
 
   await writeFile(`${outdir}/manifest.json`, `${JSON.stringify(manifest, null, 2)}\n`);
 }
@@ -91,11 +81,7 @@ if (watch) {
   console.log(
     (await readLocal(EXTENSION_KEY_FILE))
       ? "Extension ID: pinned by the manifest key."
-      : `Extension ID: derived from the folder path (run npm run key to pin it).`,
+      : "Extension ID: derived from the folder path (run npm run key to pin it).",
   );
-  console.log(
-    (await readClientId())
-      ? "Google Drive backup: OAuth client id injected."
-      : `Google Drive backup: disabled (no ${CLIENT_ID_FILE}, no GOOGLE_CLIENT_ID).`,
-  );
+  console.log("Google Drive: credentials are entered in the settings page, not at build time.");
 }

@@ -54,7 +54,10 @@ export type Request =
   | { type: "saveSettings"; settings: Settings }
   | { type: "saveBackup"; backup: BackupState }
   | { type: "backupNow" }
+  | { type: "backupConnect" }
   | { type: "backupDisconnect" }
+  | { type: "saveDriveCredentials"; clientId: string; clientSecret: string }
+  | { type: "advanceSetup"; step: number }
   | { type: "clearSync" }
   | { type: "openInContainer"; url: string; containerId: string }
   // The url comes from the address of the picker page itself: the gate appends
@@ -69,8 +72,19 @@ export interface Overview {
   activeTab: TabStatus | null;
   /** How many tabs are currently frozen, per realm. */
   frozenCounts: Record<string, number>;
-  /** Whether an OAuth client id was injected into this build. */
-  driveConfigured: boolean;
+  drive: DriveStatus;
+}
+
+export interface DriveStatus {
+  /** Both credentials are saved. */
+  configured: boolean;
+  /** A refresh token is held, so uploads can run unattended. */
+  connected: boolean;
+  /** Shown so it can be pasted into the Google Cloud client. */
+  redirectUri: string;
+  extensionId: string;
+  /** Echoed back to prefill the field; the secret never leaves the background. */
+  clientId: string;
 }
 
 /** Data for the container picker that a blocked tab lands on. */

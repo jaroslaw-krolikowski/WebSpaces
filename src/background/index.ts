@@ -15,7 +15,15 @@ import {
 import { COLOR_HEX, DEFAULT_CONTAINER_ID, GROUP_COLORS } from "../shared/types";
 import type { Container, GroupColor, Realm } from "../shared/types";
 import { BACKUP_ALARM, rescheduleBackup, runBackup, runScheduledBackup } from "./backup";
-import { disconnect as driveDisconnect, isConfigured as driveConfigured } from "./drive";
+import {
+  connect as driveConnect,
+  disconnect as driveDisconnect,
+  getAuth as driveAuth,
+  isConfigured as driveConfigured,
+  isConnected as driveConnected,
+  redirectUri as driveRedirectUri,
+  saveCredentials as saveDriveCredentials,
+} from "./drive";
 import { frozenCounts, refreshGate, scheduleGateRefresh } from "./gate";
 import { mountContainer, mountedContainer, noteCookieChange } from "./mount";
 import { applySnapshot, buildSnapshot } from "./snapshot";
@@ -624,16 +632,39 @@ async function handle(request: Request): Promise<unknown> {
       return { ok: true };
 
     case "backupNow":
-      // Interactive: this is a user click, so a consent window is appropriate.
-      return runBackup(true);
+      return runBackup();
+
+    case "backupConnect": {
+      // The consent window only ever opens from a click, never from the alarm.
+      await driveConnect();
+      await markSetup(7);
+      await runBackup();
+      return { ok: true };
+    }
 
     case "backupDisconnect": {
       await driveDisconnect();
       const state = await loadState();
-      await saveState({ backup: { ...state.backup, enabled: false, lastError: null } });
+      await saveState({
+        backup: { ...state.backup, enabled: false, lastError: null },
+        setup: { completed: Math.min(state.setup.completed, 6) },
+      });
       await rescheduleBackup();
       return { ok: true };
     }
+
+    case "saveDriveCredentials": {
+      if (!request.clientId.trim() || !request.clientSecret.trim()) {
+        throw new Error("Both the client ID and the client secret are required.");
+      }
+      await saveDriveCredentials(request.clientId, request.clientSecret);
+      await markSetup(6);
+      return { ok: true };
+    }
+
+    case "advanceSetup":
+      await markSetup(request.step);
+      return { ok: true };
 
     case "clearSync":
       // Wipes only the shared copy. What is on this device stays untouched, so
@@ -683,8 +714,21 @@ async function buildOverview(): Promise<Overview> {
     state,
     activeTab,
     frozenCounts: await frozenCounts(),
-    driveConfigured: driveConfigured(),
+    drive: {
+      configured: await driveConfigured(),
+      connected: await driveConnected(),
+      redirectUri: driveRedirectUri(),
+      extensionId: chrome.runtime.id,
+      clientId: (await driveAuth()).clientId,
+    },
   };
+}
+
+/** Setup only ever moves forward, so a repeated click cannot walk it back. */
+async function markSetup(step: number): Promise<void> {
+  const state = await loadState();
+  if (state.setup.completed >= step) return;
+  await saveState({ setup: { completed: step } });
 }
 
 async function buildPendingInfo(tabId: number, fromPage?: string): Promise<PendingInfo> {

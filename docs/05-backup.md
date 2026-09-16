@@ -67,6 +67,39 @@ the second:
 The settings page walks through model 2 step by step, so the cost is a guided five minutes
 rather than a documentation hunt.
 
+### Why launchWebAuthFlow rather than getAuthToken
+
+`chrome.identity.getAuthToken` is the tidier API: no sign-in page, nothing written to the cookie
+jar, and Chrome manages the token. It reads the client ID from the **manifest**, though, which
+means credentials can only arrive at build time. Asking every user to edit a file and rebuild is
+not a setup flow.
+
+`launchWebAuthFlow` lets us build the authorisation URL ourselves, so the client ID and secret
+live in storage and can be pasted into the panel. The price is real and is handled explicitly:
+
+- **It opens a genuine Google sign-in page**, which sits on a realm host. `setAuthBypass` lifts
+  the gate for the few seconds the consent window is open, always inside a `finally`, otherwise
+  our own redirect would send the consent page to the container picker.
+- **The sign-in writes Google cookies into the mounted container.** The panel says so rather
+  than silently reshuffling containers behind the user. It does not matter afterwards, since the
+  refresh token is what keeps uploads working.
+- **We manage tokens ourselves**: authorisation code with PKCE, a stored refresh token, and an
+  access token refreshed a minute before expiry.
+
+The OAuth client is therefore a **Web application** type with
+`https://<extension-id>.chromiumapp.org/` as the redirect URI, not the Chrome Extension type.
+Google requires a client secret at the token endpoint for that client type. For an installed
+application that secret identifies the project rather than protecting it, which is why it is
+acceptable to keep it in local storage - but it is still kept out of the sync payload, out of
+the backup file and out of the repository.
+
+### Setup progress
+
+Steps two to five happen inside Google Cloud and cannot be observed from the extension, so the
+click that opens each page is what advances the list. Steps six and seven advance on real state:
+credentials saved, and a refresh token held. Progress only moves forward, so clicking a step
+again never walks it back.
+
 ### Pinning the extension ID
 
 An unpacked extension derives its ID from the directory path, so the ID changes when the folder

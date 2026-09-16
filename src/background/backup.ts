@@ -16,11 +16,11 @@ const TARGET = { folderName: "WebSpaces", fileName: "webspaces-backup.json" };
  * password and without MFA. Sessions can be restored by signing in again;
  * the configuration cannot be restored at all.
  */
-export async function runBackup(interactive: boolean): Promise<BackupState> {
+export async function runBackup(): Promise<BackupState> {
   const snapshot = await buildSnapshot(false);
 
   try {
-    await uploadSnapshot(snapshot, TARGET, interactive);
+    await uploadSnapshot(snapshot, TARGET);
     return persist({ lastAt: new Date().toISOString(), lastError: null });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -50,14 +50,14 @@ export async function rescheduleBackup(): Promise<void> {
 }
 
 /**
- * The upload driven by the alarm. Deliberately non-interactive: a consent
- * window popping up on its own in the middle of work would be worse than an
- * error note in the options page.
+ * The upload driven by the alarm. It never opens a consent window: the flow only
+ * runs on an explicit click, so a scheduled run with a dead token records the
+ * reason in settings instead of interrupting the user.
  */
 export async function runScheduledBackup(): Promise<void> {
   const state = await loadState();
   if (!state.backup.enabled) return;
-  await runBackup(false).catch((error: unknown) => {
+  await runBackup().catch((error: unknown) => {
     console.error("WebSpaces: Drive backup failed", error);
   });
 }

@@ -226,6 +226,7 @@
               <div class="row">
                 <a
                   class="btn"
+                  data-advance="2"
                   target="_blank"
                   rel="noreferrer"
                   href="https://console.cloud.google.com/projectcreate"
@@ -245,6 +246,7 @@
               <div class="row">
                 <a
                   class="btn"
+                  data-advance="3"
                   target="_blank"
                   rel="noreferrer"
                   href="https://console.cloud.google.com/apis/library/drive.googleapis.com"
@@ -266,6 +268,7 @@
               <div class="row">
                 <a
                   class="btn"
+                  data-advance="4"
                   target="_blank"
                   rel="noreferrer"
                   href="https://console.cloud.google.com/apis/credentials/consent"
@@ -279,12 +282,18 @@
                 <span class="step-no">5</span><strong>Create the OAuth client</strong>
               </div>
               <p class="sub">
-                Create credentials, pick the application type <strong>Chrome Extension</strong>,
-                and paste the ID from step 1. Copy the client ID it gives you back.
+                Create credentials and pick the application type
+                <strong>Web application</strong>. Add the address below as an authorised redirect
+                URI, then copy both the client ID and the client secret it hands back.
               </p>
+              <div class="row">
+                <code class="mono grow" id="redirect-uri"></code>
+                <button id="copy-redirect">Copy</button>
+              </div>
               <div class="row">
                 <a
                   class="btn"
+                  data-advance="5"
                   target="_blank"
                   rel="noreferrer"
                   href="https://console.cloud.google.com/apis/credentials"
@@ -295,14 +304,20 @@
 
             <li class="step" data-step="6">
               <div class="step-head">
-                <span class="step-no">6</span><strong>Put the client ID into the build</strong>
+                <span class="step-no">6</span><strong>Paste the credentials</strong>
               </div>
               <p class="sub">
-                The client ID is private to your installation, so it is never committed. Save it
-                in <span class="mono">google-client-id.txt</span> in the project root, rebuild,
-                then reload the extension at <span class="mono">chrome://extensions</span>.
+                They are stored on this device only and never reach the configuration sync, the
+                backup file, or the repository. For an installed application the secret is not a
+                real secret: it identifies the project, it does not protect it.
               </p>
-              <p class="mono">npm run build</p>
+              <div class="row">
+                <input type="text" id="client-id" placeholder="Client ID" class="grow" />
+              </div>
+              <div class="row">
+                <input type="text" id="client-secret" placeholder="Client secret" class="grow" />
+                <button class="primary" id="save-credentials">Save</button>
+              </div>
             </li>
 
             <li class="step" data-step="7">
@@ -310,9 +325,14 @@
                 <span class="step-no">7</span><strong>Connect and upload</strong>
               </div>
               <p class="sub">
-                Chrome asks for consent once, using the account already signed into this profile.
-                No sign-in page is opened, so nothing lands in the cookie jar and the isolation
-                gate has nothing to intercept.
+                A Google consent window opens once. WebSpaces lifts its own network gate for
+                those few seconds, otherwise the sign-in page would be redirected to the container
+                picker and the flow could never finish.
+              </p>
+              <p class="sub">
+                The sign-in also writes Google cookies into whichever container is mounted right
+                now. That is harmless afterwards, since the stored refresh token is what keeps
+                uploads working, but it is worth knowing where those cookies landed.
               </p>
               <div class="row">
                 <button class="primary" id="connect-drive">Connect and upload now</button>

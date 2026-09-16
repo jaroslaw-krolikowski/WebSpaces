@@ -104,6 +104,17 @@ export interface State {
   seeded: boolean;
   backup: BackupState;
   sync: SyncState;
+  setup: SetupState;
+}
+
+/** How far the guided Google Drive setup has been taken. */
+export interface SetupState {
+  /**
+   * Highest step finished, 0 to 7. Steps one to five cannot be verified from
+   * here because they happen inside Google Cloud, so they advance on the click
+   * that opens them. The last two are derived from real state instead.
+   */
+  completed: number;
 }
 
 /** State of the zero-setup configuration sync through chrome.storage.sync. */
@@ -137,6 +148,8 @@ export const DEFAULT_SYNC: SyncState = {
   lastAt: null,
   lastError: null,
 };
+
+export const DEFAULT_SETUP: SetupState = { completed: 0 };
 
 export const DEFAULT_BACKUP: BackupState = {
   enabled: false,

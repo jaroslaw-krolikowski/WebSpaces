@@ -190,9 +190,10 @@ history. It uploads into a **`WebSpaces`** folder on the Drive of the signed-in 
 plain text would give anyone who takes over that Google account entry to every tenant without a
 password and without MFA.
 
-Authentication goes through `chrome.identity.getAuthToken`, an internal browser mechanism
-rather than a sign-in page. Two useful consequences: **the gate has nothing to intercept**, and
-**nothing lands in the cookie jar** that could pollute the mounted container vault.
+Authentication is the OAuth authorisation code flow with PKCE, run through
+`chrome.identity.launchWebAuthFlow`. That is what lets the credentials be **pasted into the
+settings panel instead of built into the extension**: the tidier `getAuthToken` reads its client
+ID from the manifest, which would put setup back behind a rebuild.
 
 #### Why you register your own credentials
 
@@ -208,31 +209,39 @@ moves. Both key files are gitignored.
 
 ### Setup
 
-**The settings page walks you through this.** Open **Settings > Backup & Sync**, where every step
-carries a short explanation and a button that opens the page you need. The list below is the same
-thing in text form.
+**Do it in the settings page.** Open **Settings > Backup & Sync**. Every step carries a one line
+reason, a button that opens the page it needs, and marks itself done as you go. **No rebuild is
+involved**: the credentials are pasted into the panel and stored on the device.
 
-The OAuth client id is private to an installation, so it is not in the repository. Without it
-the extension works normally and only the backup controls stay disabled.
+The list below is the same thing in text form.
 
-1. `npm run build`, load `dist`, copy the **extension id** from `chrome://extensions`.
-2. In [Google Cloud Console](https://console.cloud.google.com) create a project and enable the
-   **Google Drive API**.
-3. OAuth consent screen: **External** (or **Internal** with Workspace), scope
+1. Copy the **extension ID** shown in step 1.
+2. In [Google Cloud Console](https://console.cloud.google.com) create a project.
+3. Enable the **Google Drive API**.
+4. OAuth consent screen: **External** (or **Internal** with Workspace), scope
    `https://www.googleapis.com/auth/drive.file`, add yourself as a test user.
-4. **Credentials → Create → OAuth client ID**, application type **Chrome Extension**, paste the
-   extension id from step 1.
-5. Put the client id in `google-client-id.txt` in the project root (it is gitignored) or set
-   the `GOOGLE_CLIENT_ID` environment variable.
-6. `npm run build` again, reload the extension, then **Settings > Backup & Sync > Connect and
-   upload now** and accept.
+5. **Credentials > Create > OAuth client ID**, application type **Web application**, and add the
+   redirect URI shown in step 5, which is `https://<extension-id>.chromiumapp.org/`.
+6. Paste the **client ID** and **client secret** into the panel and press Save.
+7. Press **Connect and upload now** and accept the consent window.
+
+For an installed application the client secret is not a real secret: it identifies the project,
+it does not protect it. It is stored on this device only, and it never reaches the configuration
+sync, the backup file, or the repository.
 
 The `drive.file` scope is the narrowest available: the extension sees **only files it created
 itself** and has no right to read the rest of your Drive. One side effect - a `WebSpaces` folder
 you made by hand is invisible to it, so it will create its own.
 
-**The id of an extension loaded from a directory depends on that path.** Moving the project
-changes the id and breaks the OAuth binding; update it in Google Cloud if you relocate.
+Two things the consent step does that are worth knowing. It **opens a real Google sign-in page**,
+which sits on a realm host, so WebSpaces lifts its own gate for those few seconds or the page
+would be redirected to the container picker and never finish. And signing in **writes Google
+cookies into whichever container is mounted**; that is harmless afterwards, because the stored
+refresh token is what keeps uploads working, but it is worth knowing where they landed.
+
+**The ID of an extension loaded from a directory depends on that path.** Moving the project
+changes the ID and breaks the OAuth binding. Run `npm run key` once to pin it, and a single
+registration stays valid across moves and machines.
 
 Backups overwrite the same file, so version history stays on the Drive side instead of piling
 up dated copies. The alarm never prompts for consent on its own: if access expires, the reason
