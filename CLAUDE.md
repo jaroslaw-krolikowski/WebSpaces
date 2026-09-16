@@ -24,6 +24,7 @@ Read in this order:
 | `docs/04-rules.md` | opening rules and pattern semantics |
 | `docs/05-backup.md` | Chrome sync, Google Drive backup, file export |
 | `docs/06-development.md` | build, tests, conventions |
+| `docs/07-experimental.md` | features that rearrange user data, and their escape hatches |
 
 `README.md` is the user-facing entry point and repeats the essentials.
 
@@ -98,6 +99,9 @@ time. This is a property of the platform, not of the implementation.
   state, which triggers a push, which the other device applies - the two would bounce the same
   configuration forever. The equality check in `pushToSync` is what stops it, and the writer id
   in the metadata guards the same loop within one device.
+- **Every experimental feature must be reversible by one switch**, and switching it off must
+  leave things exactly as visible as before. Per-container bookmarks physically move entries, so
+  the way back matters more than the feature.
 - Do not reintroduce a bypass that opens the isolation gate. One existed while the Drive
   sign-in page had to load, and a gate that can be switched off is a gate you cannot reason
   about. Nothing in the extension needs to reach a realm host outside a container.

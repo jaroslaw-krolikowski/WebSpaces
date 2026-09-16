@@ -1,7 +1,13 @@
 import { send } from "../shared/messages";
 import type { Overview, Snapshot } from "../shared/messages";
-import { BUILTIN_REALMS, COLOR_HEX, DEFAULT_CONTAINER_ID, GROUP_COLORS } from "../shared/types";
-import type { Container, GroupColor, Realm, Rule, State } from "../shared/types";
+import {
+  ALWAYS_VISIBLE,
+  BUILTIN_REALMS,
+  COLOR_HEX,
+  DEFAULT_CONTAINER_ID,
+  GROUP_COLORS,
+} from "../shared/types";
+import type { Container, GroupColor, OrphanBookmarks, Realm, Rule, State } from "../shared/types";
 import { el, esc } from "./dom";
 
 let state: State;
@@ -27,15 +33,101 @@ function clearStatus(): void {
   el("status").hidden = true;
 }
 
+let bookmarkCounts: Record<string, number> = {};
+
 async function load(): Promise<void> {
   const overview = await send<Overview>({ type: "getOverview" });
   state = overview.state;
+  bookmarkCounts = overview.bookmarkCounts;
   renderContainers();
   renderRules();
   renderRealms();
   renderSettings();
   renderSync();
+  renderExperimental();
 }
+
+/* --- Experimental --- */
+
+function renderExperimental(): void {
+  el<HTMLInputElement>("bookmarks-per-container").checked = state.settings.bookmarksPerContainer;
+  el<HTMLSelectElement>("orphan-bookmarks").value = state.settings.orphanBookmarks;
+  el<HTMLButtonElement>("restore-bookmarks").disabled = !state.settings.bookmarksPerContainer;
+
+  if (!state.settings.bookmarksPerContainer) {
+    el("bookmark-counts").innerHTML = "";
+    return;
+  }
+
+  const rows = state.containers
+    .map((container) => {
+      const owned = bookmarkCounts[container.id] ?? 0;
+      return `<div class="row spread">
+        <span class="row grow truncate">
+          <span class="dot" style="background:${COLOR_HEX[container.color]}"></span>
+          <span class="truncate">${esc(container.name)}</span>
+        </span>
+        <span class="sub">${owned} ${owned === 1 ? "entry" : "entries"}</span>
+      </div>`;
+    })
+    .join("");
+
+  const pinned = bookmarkCounts[ALWAYS_VISIBLE] ?? 0;
+  const pinnedRow =
+    pinned > 0
+      ? `<div class="row spread">
+           <span class="grow truncate sub">Pinned to every bar</span>
+           <span class="sub">${pinned} ${pinned === 1 ? "entry" : "entries"}</span>
+         </div>`
+      : "";
+
+  el("bookmark-counts").innerHTML = `<h3>What each container owns</h3>${rows}${pinnedRow}`;
+}
+
+for (const id of ["bookmarks-per-container", "orphan-bookmarks"]) {
+  el(id).addEventListener("change", () => {
+    run(async () => {
+      clearStatus();
+      const enabling =
+        el<HTMLInputElement>("bookmarks-per-container").checked &&
+        !state.settings.bookmarksPerContainer;
+
+      await send({
+        type: "saveSettings",
+        settings: {
+          ...state.settings,
+          bookmarksPerContainer: el<HTMLInputElement>("bookmarks-per-container").checked,
+          orphanBookmarks: el<HTMLSelectElement>("orphan-bookmarks").value as OrphanBookmarks,
+        },
+      });
+      await load();
+
+      if (enabling) {
+        status(
+          "On. The bar you had is now the Default set. Switch to another container and the bar " +
+            "empties for it, ready for whatever you bookmark there.",
+        );
+      }
+    });
+  });
+}
+
+el("restore-bookmarks").addEventListener("click", () => {
+  if (
+    !confirm(
+      "Put every parked bookmark back on the bar?\n\n" +
+        "Nothing is deleted. The bar ends up holding everything at once, which is where it was " +
+        "before this feature was switched on.",
+    )
+  ) {
+    return;
+  }
+  run(async () => {
+    const result = await send<{ moved?: number }>({ type: "restoreBookmarks" });
+    await load();
+    status(`Moved ${result.moved ?? 0} back onto the bar.`);
+  });
+});
 
 /* --- Configuration sync --- */
 
@@ -87,7 +179,7 @@ el("sync-clear").addEventListener("click", () => {
 
 /* --- Sidebar navigation --- */
 
-const SECTIONS = ["containers", "rules", "realms", "other", "backup"];
+const SECTIONS = ["containers", "rules", "realms", "other", "backup", "experimental"];
 
 function showSection(name: string): void {
   const target = SECTIONS.includes(name) ? name : "containers";

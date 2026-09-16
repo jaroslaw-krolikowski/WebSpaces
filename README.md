@@ -160,6 +160,19 @@ The **tab strip** menu needs Chrome 149 or newer - earlier releases did not expo
 to extensions. On older Chrome the entry is simply absent and the page and icon menus work
 unchanged. Check your version at `chrome://version`.
 
+## Experimental: bookmarks per container
+
+The bar shows only the bookmarks of the container you are in; the rest park in
+. Chrome cannot filter the bar, so entries are physically moved, and
+folders move whole.
+
+Switching it on adopts your existing bar into **Default**, so nothing disappears. Bookmarks you
+add later belong to whichever container is showing. Deleting a container sends its bookmarks back
+to Default, or pins them to every bar, depending on the setting.
+
+One switch puts everything back. Details and the known costs are in
+[docs/07-experimental.md](docs/07-experimental.md).
+
 ## Backup and sync
 
 Two mechanisms, and **neither asks you to set anything up**. No OAuth, no Google Cloud project,

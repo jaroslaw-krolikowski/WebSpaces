@@ -17,6 +17,7 @@
     "tabs",
     "tabGroups",
     "cookies",
+    "bookmarks",
     "storage",
     "unlimitedStorage",
     "declarativeNetRequest",

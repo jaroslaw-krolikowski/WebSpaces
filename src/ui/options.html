@@ -14,6 +14,7 @@
         <button class="nav-item" data-section="realms">Realms</button>
         <button class="nav-item" data-section="other">Other</button>
         <button class="nav-item" data-section="backup">Backup &amp; Sync</button>
+        <button class="nav-item" data-section="experimental">Experimental</button>
       </aside>
 
       <main class="content">
@@ -178,6 +179,54 @@
               <span>Also restore windows and tabs when loading</span>
             </label>
             <input type="file" id="file" accept="application/json,.json" hidden />
+          </div>
+        </section>
+        <!-- Experimental -->
+        <section class="panel" data-panel="experimental" hidden>
+          <h2>Experimental</h2>
+          <p class="sub">
+            These features rearrange your data instead of only reading it. Everything here can be
+            switched off, and switching it off puts things back where they were, but it is newer
+            and less proven than the rest of the extension.
+          </p>
+
+          <h3>Bookmarks that follow the container</h3>
+          <p class="sub">
+            The bar shows only the bookmarks of the container you are in. Everything else waits in
+            a folder named <span class="mono">WebSpaces</span> under Other bookmarks. Chrome cannot
+            filter what the bar displays, so entries are physically moved. Folders move whole, so a
+            folder of twenty links costs one move and stays intact.
+          </p>
+          <div class="card">
+            <label class="check">
+              <input type="checkbox" id="bookmarks-per-container" />
+              <span>
+                Give each container its own bookmarks bar
+                <span class="sub">
+                  - whatever is on the bar right now becomes the <strong>Default</strong> set, so
+                  switching this on hides nothing. Bookmarks you add afterwards belong to whichever
+                  container is showing at the time.
+                </span>
+              </span>
+            </label>
+            <div class="row">
+              <label class="sub" for="orphan-bookmarks">When a container is deleted</label>
+              <select id="orphan-bookmarks" style="width: auto">
+                <option value="default">its bookmarks move to Default</option>
+                <option value="everywhere">its bookmarks stay on every bar</option>
+              </select>
+            </div>
+            <div class="row" style="margin-top: 10px">
+              <button id="restore-bookmarks">Put every bookmark back on the bar</button>
+            </div>
+          </div>
+
+          <div id="bookmark-counts" class="list"></div>
+
+          <div class="warn" style="margin-top: 12px">
+            Chrome syncs the bookmark tree between your profiles. Moving entries here produces sync
+            traffic, and on a second machine also running WebSpaces both copies would be
+            rearranging the same tree. Worth living with on one machine first.
           </div>
         </section>
       </main>

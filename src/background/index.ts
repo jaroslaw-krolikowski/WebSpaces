@@ -14,6 +14,15 @@ import {
 } from "../shared/storage";
 import { COLOR_HEX, DEFAULT_CONTAINER_ID, GROUP_COLORS } from "../shared/types";
 import type { Container, GroupColor, Realm } from "../shared/types";
+import {
+  adoptExistingBar,
+  mountBookmarks,
+  noteCreated as noteBookmarkCreated,
+  noteRemoved as noteBookmarkRemoved,
+  ownedCounts as bookmarkCounts,
+  releaseContainer as releaseBookmarks,
+  restoreAll as restoreBookmarks,
+} from "./bookmarks";
 import { frozenCounts, refreshGate, scheduleGateRefresh } from "./gate";
 import { mountContainer, mountedContainer, noteCookieChange } from "./mount";
 import { applySnapshot, buildSnapshot } from "./snapshot";
@@ -181,6 +190,11 @@ async function onTabActivated(tabId: number): Promise<void> {
   const state = await loadState();
   await updateBadge(tabId);
 
+  const containerId = await resolveTab(tabId, state.containers);
+  // Bookmarks follow the container regardless of the realm, because a realm is
+  // about colliding cookies and a bookmark bar collides with nothing.
+  if (state.settings.bookmarksPerContainer) scheduleBookmarkMount(containerId);
+
   if (!state.settings.autoMountOnFocus) {
     scheduleGateRefresh();
     return;
@@ -193,7 +207,6 @@ async function onTabActivated(tabId: number): Promise<void> {
     return;
   }
 
-  const containerId = await resolveTab(tabId, state.containers);
   const container = state.containers.find((c) => c.id === containerId);
   if (container?.isolate) await mountContainer(realm, containerId);
   await refreshGate();
@@ -270,6 +283,34 @@ async function applyRulesToOpenTabs(): Promise<number> {
 
   if (moved > 0) await refreshGate();
   return moved;
+}
+
+/* --- Experimental: bookmarks that follow the container --- */
+
+chrome.bookmarks.onCreated.addListener((id, node) => {
+  void noteBookmarkCreated(id, node);
+});
+
+chrome.bookmarks.onRemoved.addListener((id) => {
+  void noteBookmarkRemoved(id);
+});
+
+let bookmarkTimer: ReturnType<typeof setTimeout> | null = null;
+
+/**
+ * Moving bookmarks on every tab click would be churn, and Chrome syncs the
+ * bookmark tree, so the churn would travel. A short settle time means flicking
+ * through tabs costs nothing and only landing somewhere does.
+ */
+function scheduleBookmarkMount(containerId: string): void {
+  if (bookmarkTimer) clearTimeout(bookmarkTimer);
+  bookmarkTimer = setTimeout(() => {
+    bookmarkTimer = null;
+    void (async () => {
+      const state = await loadState();
+      await mountBookmarks(containerId, state.containers);
+    })();
+  }, 700);
 }
 
 chrome.cookies.onChanged.addListener((info) => {
@@ -519,6 +560,14 @@ async function handle(request: Request): Promise<unknown> {
         }
       }
 
+      if (state.settings.bookmarksPerContainer) {
+        await releaseBookmarks(
+          request.containerId,
+          state.settings.orphanBookmarks,
+          state.containers,
+        );
+      }
+
       const fresh = await loadState();
       await saveState({
         containers: fresh.containers.filter((c) => c.id !== request.containerId),
@@ -580,9 +629,23 @@ async function handle(request: Request): Promise<unknown> {
       return { ok: true };
     }
 
-    case "saveSettings":
+    case "saveSettings": {
+      const before = await loadState();
+      const was = before.settings.bookmarksPerContainer;
+      const now = request.settings.bookmarksPerContainer;
       await saveState({ settings: request.settings });
+
+      // Switching on must hide nothing: what is already on the bar becomes the
+      // default set. Switching off must leave the bar holding everything again.
+      if (!was && now) await adoptExistingBar();
+      if (was && !now) await restoreBookmarks();
       return { ok: true };
+    }
+
+    case "restoreBookmarks": {
+      const moved = await restoreBookmarks();
+      return { ok: true, moved };
+    }
 
     case "openInContainer":
       await openInContainer(request.url, request.containerId);
@@ -659,6 +722,7 @@ async function buildOverview(): Promise<Overview> {
     state,
     activeTab,
     frozenCounts: await frozenCounts(),
+    bookmarkCounts: await bookmarkCounts(),
   };
 }
 

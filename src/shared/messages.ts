@@ -53,6 +53,7 @@ export type Request =
   | { type: "deleteRealm"; realmId: string }
   | { type: "saveSettings"; settings: Settings }
   | { type: "clearSync" }
+  | { type: "restoreBookmarks" }
   | { type: "openInContainer"; url: string; containerId: string }
   // The url comes from the address of the picker page itself: the gate appends
   // it to the redirect, so it never depends on the service worker having stored it.
@@ -66,6 +67,8 @@ export interface Overview {
   activeTab: TabStatus | null;
   /** How many tabs are currently frozen, per realm. */
   frozenCounts: Record<string, number>;
+  /** How many bookmarks each container owns, for the experimental panel. */
+  bookmarkCounts: Record<string, number>;
 }
 
 /** Data for the container picker that a blocked tab lands on. */

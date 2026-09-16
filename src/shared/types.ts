@@ -88,7 +88,21 @@ export interface Settings {
   clearSiteDataOnSwitch: boolean;
   /** Carry the configuration between Chrome profiles through chrome.storage.sync. */
   syncEnabled: boolean;
+  /** Experimental: give each container its own set of bookmarks on the bar. */
+  bookmarksPerContainer: boolean;
+  /** Where the bookmarks of a deleted container end up. */
+  orphanBookmarks: OrphanBookmarks;
 }
+
+/**
+ * "default" hands them to the default container, so they show up when nothing
+ * else is mounted. "everywhere" drops ownership entirely, which leaves them on
+ * the bar for good.
+ */
+export type OrphanBookmarks = "default" | "everywhere";
+
+/** Owner value for bookmarks pinned to the bar in every container. */
+export const ALWAYS_VISIBLE = "__always__";
 
 export interface State {
   containers: Container[];
@@ -120,6 +134,8 @@ export const DEFAULT_SETTINGS: Settings = {
   showInterstitial: true,
   clearSiteDataOnSwitch: true,
   syncEnabled: true,
+  bookmarksPerContainer: false,
+  orphanBookmarks: "default",
 };
 
 export const DEFAULT_SYNC: SyncState = {
