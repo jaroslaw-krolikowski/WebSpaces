@@ -88,10 +88,17 @@ live in storage and can be pasted into the panel. The price is real and is handl
 
 The OAuth client is therefore a **Web application** type with
 `https://<extension-id>.chromiumapp.org/` as the redirect URI, not the Chrome Extension type.
-Google requires a client secret at the token endpoint for that client type. For an installed
-application that secret identifies the project rather than protecting it, which is why it is
-acceptable to keep it in local storage - but it is still kept out of the sync payload, out of
-the backup file and out of the repository.
+
+That distinction traps people, so it is worth stating plainly. A Chrome Extension client issues
+**only a client ID and no secret**, which suits `getAuthToken` because Chrome owns the token
+lifecycle and never exposes a refresh token. Google will not issue a refresh token without a
+client secret, and PKCE does not substitute for it on their endpoint, so a Chrome Extension
+client cannot drive unattended uploads through `launchWebAuthFlow`. Anyone following an older
+version of these instructions will have made the wrong client type and needs a new one.
+
+For an installed application that secret identifies the project rather than protecting it, which
+is why it is acceptable to keep it in local storage - but it is still kept out of the sync
+payload, out of the backup file and out of the repository.
 
 ### Setup progress
 

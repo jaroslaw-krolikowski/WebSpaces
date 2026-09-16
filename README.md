@@ -225,9 +225,16 @@ The list below is the same thing in text form.
 6. Paste the **client ID** and **client secret** into the panel and press Save.
 7. Press **Connect and upload now** and accept the consent window.
 
+**It has to be the Web application type**, not Chrome Extension. Only the Web application type
+issues a client secret, and Google will not return a refresh token without one, so unattended
+uploads would stop working after an hour. The Chrome Extension type exists for
+`chrome.identity.getAuthToken`, which reads its client ID from the manifest and therefore needs
+a rebuild for every change.
+
 For an installed application the client secret is not a real secret: it identifies the project,
 it does not protect it. It is stored on this device only, and it never reaches the configuration
-sync, the backup file, or the repository.
+sync, the backup file, or the repository. Google shows it right after the client is created and
+again on the client page under Additional information.
 
 The `drive.file` scope is the narrowest available: the extension sees **only files it created
 itself** and has no right to read the rest of your Drive. One side effect - a `WebSpaces` folder

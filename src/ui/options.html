@@ -286,6 +286,12 @@
                 <strong>Web application</strong>. Add the address below as an authorised redirect
                 URI, then copy both the client ID and the client secret it hands back.
               </p>
+              <p class="sub">
+                <strong>Not the Chrome Extension type.</strong> That one issues no client secret,
+                and Google will not return a refresh token without one, so unattended uploads
+                would stop working after an hour. If you already made a Chrome Extension client,
+                leave it and create a Web application client next to it.
+              </p>
               <div class="row">
                 <code class="mono grow" id="redirect-uri"></code>
                 <button id="copy-redirect">Copy</button>
@@ -306,6 +312,11 @@
               <div class="step-head">
                 <span class="step-no">6</span><strong>Paste the credentials</strong>
               </div>
+              <p class="sub">
+                Google shows both right after the client is created, and again on the client
+                page under Additional information. Only a Web application client has a secret; if
+                the field is missing, go back to step 5 and check the application type.
+              </p>
               <p class="sub">
                 They are stored on this device only and never reach the configuration sync, the
                 backup file, or the repository. For an installed application the secret is not a
