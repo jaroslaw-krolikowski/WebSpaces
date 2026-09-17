@@ -97,11 +97,29 @@ export async function resolveTab(tabId: number, containers: Container[]): Promis
   return all[tabId] ?? DEFAULT_CONTAINER_ID;
 }
 
+let assigning: Promise<unknown> = Promise.resolve();
+
 /**
  * Moves a tab into a container: stores the assignment and puts the tab into the
  * right tab group, creating that group in the window when it does not exist yet.
+ *
+ * Assignments are serialised. Opening three links at once from a container tab
+ * fires three of these, and without a queue all three read the group list before
+ * any of them creates a group - so all three create one and the window ends up
+ * with three tab groups of the same name. Chrome saves groups, so each duplicate
+ * also leaves its own chip behind on the bookmarks bar, permanently.
  */
-export async function assignTabToContainer(tabId: number, container: Container): Promise<void> {
+export function assignTabToContainer(tabId: number, container: Container): Promise<void> {
+  const next = assigning.then(
+    () => assign(tabId, container),
+    () => assign(tabId, container),
+  );
+  // The queue survives a failure; the caller still sees its own.
+  assigning = next.catch(() => undefined);
+  return next;
+}
+
+async function assign(tabId: number, container: Container): Promise<void> {
   await setTabContainer(tabId, container.id);
   const tab = await chrome.tabs.get(tabId);
 

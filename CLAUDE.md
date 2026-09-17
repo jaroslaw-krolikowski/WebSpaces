@@ -60,7 +60,10 @@ time. This is a property of the platform, not of the implementation.
    dialog, because that file is something the user deliberately moves.
 5. **A realm contains only hosts shared across organisations.** Hosts whose name carries the
    organisation stay out. See `docs/03-realms.md` - this is the single most consequential
-   design rule in the project.
+   design rule in the project. A host missing from every realm fails **silently and towards
+   leaking**: nothing swaps it, nothing freezes it, and every container shares one session on it.
+   A wildcard in a realm gates and swaps but does not clear site data, so list the concrete hosts
+   next to it.
 6. **A container and a tab group are one thing.** Changes flow both ways. Never introduce a
    second parallel list that has to be reconciled by hand.
 7. **Container names are unique** - the name doubles as the tab group title and as the
@@ -94,7 +97,13 @@ time. This is a property of the platform, not of the implementation.
   download manager) cannot be attributed to a container; blocking them breaks downloads
   without buying isolation.
 - Do not drop the `seeded` flag. Without it, deleting every realm resurrects the presets on
-  the next state read.
+  the next state read. The flip side is that a preset gaining a host later never reaches an
+  existing installation, which is what `src/background/migrate.ts` is for: it adds hosts and
+  never removes them, under a step id that is recorded once per device. Add a new id rather than
+  editing an old one.
+- Do not call `assignTabToContainer` outside its queue. Concurrent calls each read the group list
+  before any of them creates a group, and Chrome ends up with several groups of the same name -
+  which, since Chrome saves groups, leaves a duplicate chip behind for good.
 - **Do not add a cloud provider integration.** Google Drive was built and removed. Any provider
   API needs a client ID, and a client ID belongs to someone: ship one and every user reaches the
   cloud through the maintainer project and responsibility, or make each user register their own

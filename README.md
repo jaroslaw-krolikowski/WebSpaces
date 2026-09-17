@@ -102,7 +102,7 @@ preset can be restored from the dropdown in settings.
 
 | Preset | Shared sign-in surface |
 |---|---|
-| Microsoft 365 / Entra ID | `login.microsoftonline.com`, `admin.microsoft.com`, `portal.azure.com` |
+| Microsoft 365 / Entra ID | `login.microsoftonline.com`, `*.cloud.microsoft`, `admin.microsoft.com`, `portal.azure.com` |
 | Atlassian (Jira, Confluence) | `id.atlassian.com`, `admin.atlassian.com`, `start.atlassian.com` |
 | Google | `accounts.google.com`, `admin.google.com` |
 | Amazon Web Services | `signin.aws.amazon.com`, `console.aws.amazon.com` |
@@ -116,8 +116,15 @@ cookies collide. Hosts whose name carries the organisation stay **out**:
 | In the realm | Outside the realm |
 |---|---|
 | `login.microsoftonline.com` | `contoso.sharepoint.com` |
+| `*.cloud.microsoft` | `contoso-my.sharepoint.com` |
 | `id.atlassian.com` | `acme.atlassian.net` |
 | `signin.aws.amazon.com` | `acme.awsapps.com` |
+
+A host left out of every realm is not just unprotected, it is invisible: nothing is swapped and
+nothing is frozen, so all containers share one session there. `*.cloud.microsoft` - the domain
+Microsoft moved Outlook, Teams and the M365 app onto - was missing at first, which looked exactly
+like sessions bleeding between groups. Existing installations get it added once, automatically;
+hosts are only ever added, never removed.
 
 The payoff is practical: **two Jira instances from different companies run side by side**,
 because their hosts do not overlap. Only two Atlassian sign-in screens need a container switch.

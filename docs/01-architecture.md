@@ -14,6 +14,7 @@
 | `src/background/tabs.ts` | Container to tab-group binding, group adoption, tab assignment. |
 | `src/background/snapshot.ts` | Builds and applies JSON snapshots. |
 | `src/background/sync.ts` | Configuration sync through chrome.storage.sync. |
+| `src/background/migrate.ts` | Carries preset changes into realm lists already stored. Adds hosts, never removes. |
 | `src/background/index.ts` | All event listeners and the message router. The only place that wires modules together. |
 | `src/ui/` | `popup`, `options`, `frozen` (the container picker), plus `dom.ts` helpers. |
 

@@ -204,6 +204,24 @@ export const BUILTIN_REALMS: Realm[] = [
       "compliance.microsoft.com",
       "endpoint.microsoft.com",
       "intune.microsoft.com",
+      // Microsoft moved the user-facing apps onto one shared domain, described in
+      // its own endpoint list as "dedicated to authenticated user facing Microsoft
+      // SaaS product experiences". No tenant appears in the host, so every
+      // organisation lands on the same origin and the cookies collide there.
+      "*.cloud.microsoft",
+      // The same hosts again, spelled out: browsingData needs concrete origins, so
+      // a wildcard alone gates the traffic but never clears the MSAL tokens these
+      // apps keep in localStorage.
+      "m365.cloud.microsoft",
+      "outlook.cloud.microsoft",
+      "teams.cloud.microsoft",
+      "copilot.cloud.microsoft",
+      "word.cloud.microsoft",
+      "excel.cloud.microsoft",
+      "powerpoint.cloud.microsoft",
+      "*.office.com",
+      "www.office.com",
+      "www.microsoft365.com",
     ],
     builtin: true,
   },

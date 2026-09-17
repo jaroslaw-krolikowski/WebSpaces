@@ -26,6 +26,7 @@ import {
   restoreAll as restoreBookmarks,
 } from "./bookmarks";
 import { frozenCounts, refreshGate, scheduleGateRefresh } from "./gate";
+import { upgradePresetHosts } from "./migrate";
 import { mountContainer, mountedContainer, noteCookieChange } from "./mount";
 import { applySnapshot, buildSnapshot } from "./snapshot";
 import { clearSync, isForeignChange, pullFromSync, pushToSync } from "./sync";
@@ -46,6 +47,9 @@ async function bootstrap(): Promise<void> {
   // The shared configuration comes first so this device starts from what the
   // other machines agreed on, rather than pushing a stale copy over it.
   if (state.settings.syncEnabled) await pullFromSync();
+  // After the pull, so the hosts land on the configuration this device ends up
+  // with rather than on one it is about to overwrite.
+  await upgradePresetHosts();
   // After a pull, because the pull can be what switched the feature on here.
   await claimBar();
   await syncBookmarksToActiveTab();

@@ -46,6 +46,26 @@ test("a broad SSO cookie is caught by the realm", () => {
   assert.equal(cookieBelongsToRealm(".login.microsoftonline.com", microsoft), true);
 });
 
+test("the shared cloud.microsoft domain is inside the realm", () => {
+  // Microsoft moved its user-facing apps onto one domain shared by every tenant.
+  // While it was missing from the preset those hosts were never swapped and
+  // never gated, so every container used one session on them.
+  assert.equal(cookieBelongsToRealm(".cloud.microsoft", microsoft), true);
+  assert.equal(cookieBelongsToRealm("m365.cloud.microsoft", microsoft), true);
+  assert.equal(realmForUrl(BUILTIN_REALMS, "https://m365.cloud.microsoft/chat")?.id, "microsoft");
+  assert.equal(
+    realmForUrl(BUILTIN_REALMS, "https://outlook.cloud.microsoft/mail/")?.id,
+    "microsoft",
+  );
+  assert.equal(realmForUrl(BUILTIN_REALMS, "https://www.office.com/")?.id, "microsoft");
+
+  // A wildcard is invisible to browsingData, which needs concrete origins, so
+  // the hosts holding MSAL tokens have to be listed on their own as well.
+  const concrete = microsoft.hosts.filter((host) => !host.startsWith("*."));
+  assert.ok(concrete.includes("m365.cloud.microsoft"));
+  assert.ok(concrete.includes("teams.cloud.microsoft"));
+});
+
 test("hosts outside a realm are left alone", () => {
   // SharePoint is deliberately outside the realm: the host carries the tenant
   // name, so nothing collides and those tabs should run in parallel.
