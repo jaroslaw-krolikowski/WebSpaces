@@ -271,6 +271,13 @@
     }
   },
   "popupSwitch": { "message": "Switch to this container and reload" },
+  "popupIsolateSite": {
+    "message": "Give $HOST$ its own session per container",
+    "placeholders": { "host": { "content": "$1", "example": "chatgpt.com" } }
+  },
+  "popupIsolateNote": {
+    "message": "Only sites listed in a realm get a separate session. Adding this one means its tabs in other containers are frozen while you are here."
+  },
   "popupFrozenCount": {
     "message": " - $COUNT$ frozen",
     "placeholders": { "count": { "content": "$1", "example": "2" } }

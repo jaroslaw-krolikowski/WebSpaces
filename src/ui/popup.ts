@@ -10,8 +10,26 @@ el("open-options").addEventListener("click", () => {
   void chrome.runtime.openOptionsPage();
 });
 
+/**
+ * The host of the active tab, as a realm would list it. A leading `www.` is
+ * dropped because nobody thinks of it as part of the site, and a realm listing
+ * `www.example.com` would miss every other page of the same site.
+ */
+function hostOf(url: string | undefined): string | null {
+  if (!url) return null;
+  try {
+    const { protocol, hostname } = new URL(url);
+    if (protocol !== "https:" && protocol !== "http:") return null;
+    return hostname.replace(/^www\./, "");
+  } catch {
+    return null;
+  }
+}
+
 async function render(): Promise<void> {
   const { state, activeTab, frozenCounts } = await send<Overview>({ type: "getOverview" });
+  const [openTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  const host = hostOf(openTab?.url);
   const byId = new Map(state.containers.map((c) => [c.id, c]));
   const current = activeTab ? byId.get(activeTab.containerId) : undefined;
   const realm = activeTab?.realmId
@@ -51,6 +69,18 @@ async function render(): Promise<void> {
     }
   } else {
     html.push(`<div class="sub" style="margin-top:6px">${t("popupNoRealm")}</div>`);
+    // The realm list is the whole mechanism, so the fastest way to extend it is
+    // from the site you are looking at, not from a text field in settings.
+    if (host) {
+      html.push(
+        `<div class="row" style="margin-top:10px">
+           <button class="grow" data-action="isolate" data-host="${esc(host)}">
+             ${esc(t("popupIsolateSite", host))}
+           </button>
+         </div>
+         <div class="sub" style="margin-top:6px">${t("popupIsolateNote")}</div>`,
+      );
+    }
   }
   html.push("</div>");
 
@@ -105,6 +135,17 @@ app.addEventListener("click", (event) => {
 });
 
 async function handleAction(button: HTMLElement): Promise<void> {
+  if (button.dataset["action"] === "isolate") {
+    const host = button.dataset["host"];
+    if (!host) return;
+    // One realm per site keeps the freezing as narrow as it can be: only tabs on
+    // this host, in other containers, and nothing else in the browser.
+    // The wildcard covers subdomains; the bare host is what browsingData can clear.
+    await send({ type: "createRealm", name: host, hosts: [host, `*.${host}`] });
+    await render();
+    return;
+  }
+
   const containerId = button.dataset["container"];
   if (!containerId) return;
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });

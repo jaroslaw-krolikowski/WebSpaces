@@ -97,6 +97,18 @@ native messaging host and an install outside the Web Store.
 
 ## Realms
 
+**A container does not isolate every site you open in it.** Only the hosts listed in a realm get a
+separate session; everything else shares one cookie jar, exactly as before you installed anything.
+
+That is deliberate, and it is the trade-off the whole design turns on. Isolating a host means tabs
+of other containers on that host get **frozen** while you are elsewhere. Isolate every site and
+you can only use one container at a time in the entire browser, which is a worse version of
+separate Chrome profiles. Isolate the hosts that actually collide and everything else keeps
+working in parallel.
+
+So realms are the dial. If a site matters, put it in one - the popup offers to do it for the site
+you are on, in one click, and it lands in a realm of its own so the freezing stays narrow.
+
 The bundled realms are **presets, not a closed list** - edit, delete, or add your own. A deleted
 preset can be restored from the dropdown in settings.
 

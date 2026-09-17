@@ -271,6 +271,13 @@
     }
   },
   "popupSwitch": { "message": "Przełącz na ten kontener i odśwież" },
+  "popupIsolateSite": {
+    "message": "Daj $HOST$ osobną sesję w każdym kontenerze",
+    "placeholders": { "host": { "content": "$1", "example": "chatgpt.com" } }
+  },
+  "popupIsolateNote": {
+    "message": "Osobną sesję dostają tylko witryny wypisane w domenie izolacji. Dodanie tej oznacza, że jej karty w innych kontenerach będą zamrożone, dopóki jesteś tutaj."
+  },
   "popupFrozenCount": {
     "message": " - zamrożonych: $COUNT$",
     "placeholders": { "count": { "content": "$1", "example": "2" } }

@@ -3,6 +3,26 @@
 A realm is a set of hosts whose cookies collide between containers. It is the single most
 consequential choice in the project, because it decides how many tabs get frozen.
 
+## What people expect, and what happens
+
+The expectation is reasonable: put a site in a container and it gets its own session. That is how
+Firefox behaves, because Firefox isolates in the engine and every container runs in parallel.
+
+Here, **only hosts listed in a realm are isolated**. Everything else shares one cookie jar across
+all containers. The reason is that Chrome offers no per-tab cookie store, so isolation means
+swapping the jar, and swapping means every tab of a non-mounted container has to be frozen or it
+will rotate the mounted session underneath you.
+
+Isolating everything would therefore freeze everything: one container at a time across the whole
+browser, with a full-jar swap on every switch - tens of thousands of `chrome.cookies.set` calls,
+seconds of work, and one failure away from losing sessions. Separate Chrome profiles do that job
+better.
+
+So the realm list is the dial between the two. A host in a realm is isolated and its tabs
+elsewhere freeze; a host outside every realm is shared and never freezes. Deciding which hosts go
+in is the user's call, and the popup offers to add the site in view as its own realm so the cost
+stays confined to that one host.
+
 ## The rule
 
 **Only hosts shared across organisations belong in a realm.** Those are the only places where
