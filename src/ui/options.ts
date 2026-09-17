@@ -7,7 +7,15 @@ import {
   DEFAULT_CONTAINER_ID,
   GROUP_COLORS,
 } from "../shared/types";
-import type { Container, GroupColor, OrphanBookmarks, Realm, Rule, State } from "../shared/types";
+import type {
+  BookmarkEntry,
+  Container,
+  GroupColor,
+  OrphanBookmarks,
+  Realm,
+  Rule,
+  State,
+} from "../shared/types";
 import { el, esc } from "./dom";
 
 let state: State;
@@ -33,12 +41,16 @@ function clearStatus(): void {
   el("status").hidden = true;
 }
 
-let bookmarkCounts: Record<string, number> = {};
+let bookmarks: BookmarkEntry[] = [];
+/** Which owner the bookmark list is showing, kept across reloads. */
+let shownOwner = DEFAULT_CONTAINER_ID;
 
 async function load(): Promise<void> {
   const overview = await send<Overview>({ type: "getOverview" });
   state = overview.state;
-  bookmarkCounts = overview.bookmarkCounts;
+  bookmarks = state.settings.bookmarksPerContainer
+    ? (await send<{ entries: BookmarkEntry[] }>({ type: "listBookmarks" })).entries
+    : [];
   renderContainers();
   renderRules();
   renderRealms();
@@ -54,35 +66,76 @@ function renderExperimental(): void {
   el<HTMLSelectElement>("orphan-bookmarks").value = state.settings.orphanBookmarks;
   el<HTMLButtonElement>("restore-bookmarks").disabled = !state.settings.bookmarksPerContainer;
 
-  if (!state.settings.bookmarksPerContainer) {
-    el("bookmark-counts").innerHTML = "";
+  el("bookmark-manager").hidden = !state.settings.bookmarksPerContainer;
+  if (!state.settings.bookmarksPerContainer) return;
+
+  const counts: Record<string, number> = {};
+  for (const entry of bookmarks) counts[entry.owner] = (counts[entry.owner] ?? 0) + 1;
+
+  // A container the user deleted meanwhile would leave the list showing nothing
+  // with no way back, so the selection falls home instead.
+  const owners = [...state.containers.map((c) => c.id), ALWAYS_VISIBLE];
+  if (!owners.includes(shownOwner)) shownOwner = DEFAULT_CONTAINER_ID;
+
+  el("bookmark-owner").innerHTML = ownerOptions(shownOwner, counts);
+  renderBookmarkList(counts[shownOwner] ?? 0);
+}
+
+/** The owner picker and every per-row destination share one list of options. */
+function ownerOptions(selected: string, counts?: Record<string, number>): string {
+  const label = (id: string, name: string): string => {
+    const owned = counts?.[id];
+    const suffix = owned === undefined ? "" : ` (${owned})`;
+    return `<option value="${esc(id)}" ${id === selected ? "selected" : ""}>${esc(
+      name,
+    )}${suffix}</option>`;
+  };
+
+  return (
+    state.containers.map((c) => label(c.id, c.name)).join("") +
+    label(ALWAYS_VISIBLE, "Pinned to every bar")
+  );
+}
+
+function renderBookmarkList(owned: number): void {
+  if (owned === 0) {
+    el("bookmark-list").innerHTML =
+      shownOwner === ALWAYS_VISIBLE
+        ? '<p class="sub">Nothing is pinned. An entry set to this stays on the bar in every container.</p>'
+        : '<p class="sub">Nothing here yet. Bookmarks you add while this container is showing land ' +
+          "here. To bring one over, pick the container that has it above and change its owner.</p>";
     return;
   }
 
-  const rows = state.containers
-    .map((container) => {
-      const owned = bookmarkCounts[container.id] ?? 0;
-      return `<div class="row spread">
-        <span class="row grow truncate">
-          <span class="dot" style="background:${COLOR_HEX[container.color]}"></span>
-          <span class="truncate">${esc(container.name)}</span>
-        </span>
-        <span class="sub">${owned} ${owned === 1 ? "entry" : "entries"}</span>
+  el("bookmark-list").innerHTML = bookmarks
+    .filter((entry) => entry.owner === shownOwner)
+    .map((entry) => {
+      // A folder carries everything inside it, so it is worth saying which is which.
+      const kind = entry.url ?? "Folder";
+      return `<div class="row" data-bookmark="${esc(entry.id)}">
+        <span class="grow truncate" title="${esc(kind)}">${esc(entry.title)}</span>
+        <select data-field="owner" style="width:auto">${ownerOptions(entry.owner)}</select>
       </div>`;
     })
     .join("");
-
-  const pinned = bookmarkCounts[ALWAYS_VISIBLE] ?? 0;
-  const pinnedRow =
-    pinned > 0
-      ? `<div class="row spread">
-           <span class="grow truncate sub">Pinned to every bar</span>
-           <span class="sub">${pinned} ${pinned === 1 ? "entry" : "entries"}</span>
-         </div>`
-      : "";
-
-  el("bookmark-counts").innerHTML = `<h3>What each container owns</h3>${rows}${pinnedRow}`;
 }
+
+el("bookmark-owner").addEventListener("change", () => {
+  shownOwner = el<HTMLSelectElement>("bookmark-owner").value;
+  renderExperimental();
+});
+
+el("bookmark-list").addEventListener("change", (event) => {
+  const select = event.target as HTMLSelectElement;
+  const id = select.closest<HTMLElement>("[data-bookmark]")?.dataset["bookmark"];
+  if (!id) return;
+
+  run(async () => {
+    clearStatus();
+    await send({ type: "assignBookmark", bookmarkId: id, owner: select.value });
+    await load();
+  });
+});
 
 for (const id of ["bookmarks-per-container", "orphan-bookmarks"]) {
   el(id).addEventListener("change", () => {

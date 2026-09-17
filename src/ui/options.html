@@ -221,7 +221,20 @@
             </div>
           </div>
 
-          <div id="bookmark-counts" class="list"></div>
+          <div id="bookmark-manager" hidden>
+            <h3>Who owns what</h3>
+            <p class="sub">
+              Chrome gives extensions no way into the right-click menu of a bookmark, nor into the
+              star button, so this is the place to hand an entry to another container. To save a
+              page straight into one, right-click the page and pick
+              <span class="mono">Bookmark page in container</span>.
+            </p>
+            <div class="row">
+              <label class="sub" for="bookmark-owner">Show the bookmarks of</label>
+              <select id="bookmark-owner" class="grow"></select>
+            </div>
+            <div id="bookmark-list" class="list"></div>
+          </div>
 
           <div class="warn" style="margin-top: 12px">
             Chrome syncs the bookmark tree between your profiles. Moving entries here produces sync

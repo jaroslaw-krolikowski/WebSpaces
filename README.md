@@ -151,6 +151,7 @@ so the container picker clicks itself through.
 | a tab in the tab strip | **Move tab to container** - moves the clicked tab |
 | page content | **Move tab to container** - moves the current tab |
 | the extension icon | the same, for the active tab |
+| page content or the icon | **Bookmark page in container** - only while per-container bookmarks are on |
 
 Moving a tab also mounts that container session and reloads the page; without it you would
 still see the previous account and the tab would shortly hit the gate as frozen. The reload
@@ -169,6 +170,12 @@ are physically moved; folders move whole and arrive intact.
 Switching it on adopts your existing bar into **Default**, so nothing disappears. Bookmarks you
 add later belong to whichever container is showing. Deleting a container sends its bookmarks back
 to Default, or pins them to every bar, depending on the setting.
+
+To save a page into a container that is **not** the one showing, right-click the page and use
+**Bookmark page in container**. To hand an entry you already have to another container, use
+**Settings > Experimental > Who owns what**. Both exist because Chrome exposes no `bookmark`
+context to extensions and no way into the star button, so the choice cannot live where you would
+expect it - on the bookmark itself.
 
 One switch puts everything back. Details and the known costs are in
 [docs/07-experimental.md](docs/07-experimental.md).

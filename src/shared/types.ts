@@ -104,6 +104,16 @@ export type OrphanBookmarks = "default" | "everywhere";
 /** Owner value for bookmarks pinned to the bar in every container. */
 export const ALWAYS_VISIBLE = "__always__";
 
+/** One tracked bookmark, as the settings page lists it. */
+export interface BookmarkEntry {
+  id: string;
+  title: string;
+  /** null for a folder, which is tracked and moved exactly like a single entry. */
+  url: string | null;
+  /** A container id, or ALWAYS_VISIBLE. */
+  owner: string;
+}
+
 export interface State {
   containers: Container[];
   realms: Realm[];

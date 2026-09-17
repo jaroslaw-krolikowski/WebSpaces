@@ -1,6 +1,6 @@
 import { loadState } from "../shared/storage";
 import { ALWAYS_VISIBLE, DEFAULT_CONTAINER_ID } from "../shared/types";
-import type { Container, OrphanBookmarks } from "../shared/types";
+import type { BookmarkEntry, Container, OrphanBookmarks } from "../shared/types";
 
 /**
  * Per-container bookmarks.
@@ -65,6 +65,16 @@ function find(
     if (inner) return inner;
   }
   return null;
+}
+
+function walk(
+  nodes: chrome.bookmarks.BookmarkTreeNode[],
+  visit: (node: chrome.bookmarks.BookmarkTreeNode) => void,
+): void {
+  for (const node of nodes) {
+    visit(node);
+    if (node.children) walk(node.children, visit);
+  }
 }
 
 async function ensureVaultFolder(): Promise<string> {
@@ -168,6 +178,9 @@ export async function noteCreated(
   if (node.parentId !== (await barId())) return;
 
   const owners = await readOwners();
+  // "Bookmark page in container X" writes the owner itself, and this event
+  // fires for that creation too. The explicit choice must win over the bar.
+  if (owners[id]) return;
   owners[id] = (await readMounted()) ?? DEFAULT_CONTAINER_ID;
   await writeOwners(owners);
 }
@@ -179,11 +192,80 @@ export async function noteRemoved(id: string): Promise<void> {
   await writeOwners(owners);
 }
 
-/** Pins an entry to the bar in every container, or releases it back. */
-export async function setAlwaysVisible(bookmarkId: string, always: boolean): Promise<void> {
+/**
+ * Everything the extension owns, with dead ids swept on the way out. Chrome can
+ * remove a bookmark while the service worker sleeps, and a stale id would appear
+ * in settings as a row that moves nowhere.
+ */
+export async function listOwned(): Promise<BookmarkEntry[]> {
   const owners = await readOwners();
-  owners[bookmarkId] = always ? ALWAYS_VISIBLE : ((await readMounted()) ?? DEFAULT_CONTAINER_ID);
+  const alive = new Map<string, chrome.bookmarks.BookmarkTreeNode>();
+  walk(await chrome.bookmarks.getTree(), (node) => alive.set(node.id, node));
+
+  const entries: BookmarkEntry[] = [];
+  let pruned = false;
+
+  for (const [id, owner] of Object.entries(owners)) {
+    const node = alive.get(id);
+    if (!node) {
+      delete owners[id];
+      pruned = true;
+      continue;
+    }
+    entries.push({ id, title: node.title || (node.url ?? ""), url: node.url ?? null, owner });
+  }
+
+  if (pruned) await writeOwners(owners);
+  return entries.sort((a, b) => a.title.localeCompare(b.title));
+}
+
+/**
+ * Hands one entry to another container. Ownership alone would not be enough:
+ * the owner decides where the entry physically lives, so it moves to the bar
+ * when that container is the one on screen and to its parking folder otherwise.
+ *
+ * This is the only way to reassign a bookmark, because Chrome exposes no
+ * "bookmark" context for extension menus - see docs/07-experimental.md.
+ */
+export async function assignBookmark(
+  bookmarkId: string,
+  owner: string,
+  containers: Container[],
+): Promise<void> {
+  const owners = await readOwners();
+  const mounted = (await readMounted()) ?? DEFAULT_CONTAINER_ID;
+  const parent =
+    owner === ALWAYS_VISIBLE || owner === mounted
+      ? await barId()
+      : await folderFor(owner, containers);
+
+  await chrome.bookmarks.move(bookmarkId, { parentId: parent });
+  owners[bookmarkId] = owner;
   await writeOwners(owners);
+}
+
+/**
+ * Saves a page straight into a container, whether or not that container is the
+ * one showing. Chrome does not let an extension into the star button bubble, so
+ * choosing the container while saving has to happen somewhere else entirely.
+ */
+export async function bookmarkPage(
+  url: string,
+  title: string,
+  containerId: string,
+  containers: Container[],
+): Promise<boolean> {
+  const mounted = (await readMounted()) ?? DEFAULT_CONTAINER_ID;
+  const onBar = containerId === mounted;
+  const parent = onBar ? await barId() : await folderFor(containerId, containers);
+
+  const created = await chrome.bookmarks.create({ parentId: parent, title, url });
+  const owners = await readOwners();
+  owners[created.id] = containerId;
+  await writeOwners(owners);
+  // The caller says where it went, because a bookmark parked in a folder for
+  // another container leaves nothing at all to see.
+  return onBar;
 }
 
 /**
@@ -264,14 +346,4 @@ export async function restoreAll(): Promise<number> {
 
   await chrome.storage.local.remove([OWNERS_KEY, FOLDERS_KEY, MOUNTED_KEY]);
   return moved;
-}
-
-/** How many entries each container owns, for the settings page. */
-export async function ownedCounts(): Promise<Record<string, number>> {
-  const owners = await readOwners();
-  const counts: Record<string, number> = {};
-  for (const owner of Object.values(owners)) {
-    counts[owner] = (counts[owner] ?? 0) + 1;
-  }
-  return counts;
 }

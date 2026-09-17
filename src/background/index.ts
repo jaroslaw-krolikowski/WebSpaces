@@ -12,14 +12,16 @@ import {
   takePendingUrl,
   uid,
 } from "../shared/storage";
-import { COLOR_HEX, DEFAULT_CONTAINER_ID, GROUP_COLORS } from "../shared/types";
+import { ALWAYS_VISIBLE, COLOR_HEX, DEFAULT_CONTAINER_ID, GROUP_COLORS } from "../shared/types";
 import type { Container, GroupColor, Realm } from "../shared/types";
 import {
   adoptExistingBar,
+  assignBookmark,
+  bookmarkPage,
+  listOwned as listBookmarks,
   mountBookmarks,
   noteCreated as noteBookmarkCreated,
   noteRemoved as noteBookmarkRemoved,
-  ownedCounts as bookmarkCounts,
   releaseContainer as releaseBookmarks,
   restoreAll as restoreBookmarks,
 } from "./bookmarks";
@@ -356,6 +358,18 @@ async function rebuildContextMenus(): Promise<void> {
       contexts: moveContexts,
     });
 
+    // Chrome has no "bookmark" context, and the star button bubble is out of
+    // reach, so this menu is the only place a container can be chosen while
+    // saving a page. Pointless while every container shares one bar.
+    const pageContexts: [MenuContext, ...MenuContext[]] = ["page", "action"];
+    if (state.settings.bookmarksPerContainer) {
+      chrome.contextMenus.create({
+        id: "webspaces-bookmark",
+        title: "Bookmark page in container",
+        contexts: pageContexts,
+      });
+    }
+
     for (const container of state.containers) {
       chrome.contextMenus.create({
         id: `webspaces-open:${container.id}`,
@@ -369,6 +383,14 @@ async function rebuildContextMenus(): Promise<void> {
         title: container.name,
         contexts: moveContexts,
       });
+      if (state.settings.bookmarksPerContainer) {
+        chrome.contextMenus.create({
+          id: `webspaces-bookmark:${container.id}`,
+          parentId: "webspaces-bookmark",
+          title: container.name,
+          contexts: pageContexts,
+        });
+      }
     }
   } catch (error) {
     console.error("WebSpaces: could not rebuild the context menus", error);
@@ -382,12 +404,49 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     void openInContainer(info.linkUrl, id.slice("webspaces-open:".length), tab?.windowId);
     return;
   }
+  if (id.startsWith("webspaces-bookmark:")) {
+    const url = tab?.url ?? info.pageUrl;
+    if (url) {
+      void bookmarkInContainer(url, tab?.title ?? url, id.slice("webspaces-bookmark:".length), tab);
+    }
+    return;
+  }
   // In the "tab" context Chrome passes the clicked tab rather than the active
   // one, which is exactly the tab the user meant.
   if (id.startsWith("webspaces-move:") && tab?.id !== undefined) {
     void moveTabToContainer(tab.id, id.slice("webspaces-move:".length));
   }
 });
+
+/**
+ * Saves the page into a container. When that container is not the one showing,
+ * the bookmark lands in its parking folder and nothing appears on screen, so
+ * the badge says where it went. Silence here would read as a menu that does
+ * nothing at all.
+ */
+async function bookmarkInContainer(
+  url: string,
+  title: string,
+  containerId: string,
+  tab: chrome.tabs.Tab | undefined,
+): Promise<void> {
+  const state = await loadState();
+  const container = state.containers.find((c) => c.id === containerId);
+  if (!container) return;
+
+  const onBar = await bookmarkPage(url, title, containerId, state.containers);
+  if (onBar || tab?.id === undefined) return;
+
+  const tabId = tab.id;
+  // A plus in the colour of the target container: something was added, there.
+  await chrome.action.setBadgeText({ tabId, text: "+" }).catch(() => undefined);
+  await chrome.action
+    .setBadgeBackgroundColor({ tabId, color: COLOR_HEX[container.color] })
+    .catch(() => undefined);
+  // The badge belongs to the container of the tab, so it has to go back. If the
+  // worker sleeps before this runs, the next activation of the tab restores it.
+  setTimeout(() => void updateBadge(tabId), 2000);
+}
 
 /**
  * Moves a tab into a container. When the tab sits on a realm host it also
@@ -639,12 +698,29 @@ async function handle(request: Request): Promise<unknown> {
       // default set. Switching off must leave the bar holding everything again.
       if (!was && now) await adoptExistingBar();
       if (was && !now) await restoreBookmarks();
+      // The bookmark submenu only exists while the feature is on.
+      if (was !== now) await rebuildContextMenus();
       return { ok: true };
     }
 
     case "restoreBookmarks": {
       const moved = await restoreBookmarks();
       return { ok: true, moved };
+    }
+
+    case "listBookmarks":
+      return { entries: await listBookmarks() };
+
+    case "assignBookmark": {
+      const state = await loadState();
+      if (
+        request.owner !== ALWAYS_VISIBLE &&
+        !state.containers.some((c) => c.id === request.owner)
+      ) {
+        throw new Error("No such container.");
+      }
+      await assignBookmark(request.bookmarkId, request.owner, state.containers);
+      return { ok: true };
     }
 
     case "openInContainer":
@@ -718,12 +794,7 @@ async function buildOverview(): Promise<Overview> {
     };
   }
 
-  return {
-    state,
-    activeTab,
-    frozenCounts: await frozenCounts(),
-    bookmarkCounts: await bookmarkCounts(),
-  };
+  return { state, activeTab, frozenCounts: await frozenCounts() };
 }
 
 async function buildPendingInfo(tabId: number, fromPage?: string): Promise<PendingInfo> {

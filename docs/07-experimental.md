@@ -35,6 +35,28 @@ Folders move as units. A folder of twenty links is one move and arrives intact.
 - Found unowned on the bar during a switch: assigned to the container being parked, so nothing
   is ever stranded.
 
+### Choosing the container
+
+Chrome keeps every native bookmark surface closed to extensions. There is **no `bookmark` context**
+in `chrome.contextMenus` (Firefox has one, Chrome does not), and neither the star button bubble nor
+the edit dialog can be extended. So the container cannot be picked where it would be most natural:
+right-clicking an entry on the bar, saving with the star, or editing an entry afterwards.
+
+Two surfaces stand in for those:
+
+| Want | Where |
+|---|---|
+| save this page into a container | right-click the page or the extension icon, **Bookmark page in container** |
+| hand an existing entry to another container | **Settings > Experimental > Who owns what** |
+
+The menu appears only while the feature is on, because with one shared bar it would mean nothing.
+When the target container is not the one showing, the entry goes straight to its parking folder and
+nothing appears on screen, so the toolbar badge flashes a plus in that container colour. A menu
+entry that looks like it did nothing is worse than no menu entry.
+
+The list in settings moves the entry as well as the ownership. Ownership alone would leave it on
+the wrong bar, since the owner is precisely what decides where it physically sits.
+
 ### Deleting a container
 
 `orphanBookmarks` decides:
