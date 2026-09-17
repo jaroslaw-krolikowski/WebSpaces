@@ -42,15 +42,23 @@ function clearStatus(): void {
 }
 
 let bookmarks: BookmarkEntry[] = [];
+/** How many entries sit on the bar, as the extension sees it. */
+let barCount = 0;
 /** Which owner the bookmark list is showing, kept across reloads. */
 let shownOwner = DEFAULT_CONTAINER_ID;
 
 async function load(): Promise<void> {
   const overview = await send<Overview>({ type: "getOverview" });
   state = overview.state;
-  bookmarks = state.settings.bookmarksPerContainer
-    ? (await send<{ entries: BookmarkEntry[] }>({ type: "listBookmarks" })).entries
-    : [];
+  bookmarks = [];
+  barCount = 0;
+  if (state.settings.bookmarksPerContainer) {
+    const listed = await send<{ entries: BookmarkEntry[]; onBar: number }>({
+      type: "listBookmarks",
+    });
+    bookmarks = listed.entries;
+    barCount = listed.onBar;
+  }
   renderContainers();
   renderRules();
   renderRealms();
@@ -79,13 +87,23 @@ function renderExperimental(): void {
 
   el("bookmark-owner").innerHTML = ownerOptions(shownOwner, counts);
   renderBookmarkList(counts[shownOwner] ?? 0);
+
+  // Saying what the extension actually sees on the bar. An empty list over a
+  // full bar used to look like a mystery, and it was a bug in ownership.
+  el("bookmark-bar-state").textContent =
+    barCount === 0
+      ? "The extension sees nothing on your bookmarks bar. If yours is not empty, " +
+        "check the service worker console under chrome://extensions."
+      : `Your bar holds ${barCount} ${barCount === 1 ? "entry" : "entries"} right now, ` +
+        "and every one of them belongs to a container here.";
 }
 
 /** The owner picker and every per-row destination share one list of options. */
 function ownerOptions(selected: string, counts?: Record<string, number>): string {
   const label = (id: string, name: string): string => {
-    const owned = counts?.[id];
-    const suffix = owned === undefined ? "" : ` (${owned})`;
+    // A container with nothing in it still says so, rather than looking like a
+    // row whose count failed to load.
+    const suffix = counts ? ` (${counts[id] ?? 0})` : "";
     return `<option value="${esc(id)}" ${id === selected ? "selected" : ""}>${esc(
       name,
     )}${suffix}</option>`;

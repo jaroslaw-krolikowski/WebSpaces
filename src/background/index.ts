@@ -15,9 +15,9 @@ import {
 import { ALWAYS_VISIBLE, COLOR_HEX, DEFAULT_CONTAINER_ID, GROUP_COLORS } from "../shared/types";
 import type { Container, GroupColor, Realm } from "../shared/types";
 import {
-  adoptExistingBar,
   assignBookmark,
   bookmarkPage,
+  claimBar,
   listOwned as listBookmarks,
   mountBookmarks,
   noteCreated as noteBookmarkCreated,
@@ -46,6 +46,8 @@ async function bootstrap(): Promise<void> {
   // The shared configuration comes first so this device starts from what the
   // other machines agreed on, rather than pushing a stale copy over it.
   if (state.settings.syncEnabled) await pullFromSync();
+  // After a pull, because the pull can be what switched the feature on here.
+  await claimBar();
   await syncContainersWithGroups();
   await rebuildContextMenus();
   await applyRulesToOpenTabs();
@@ -65,7 +67,11 @@ chrome.storage.onChanged.addListener((changes, area) => {
   }
   if (area !== "sync") return;
   void (async () => {
-    if (await isForeignChange(changes)) await pullFromSync();
+    if (!(await isForeignChange(changes))) return;
+    await pullFromSync();
+    // The pull may have arrived with per-container bookmarks already on, and a
+    // bar nobody owns is a bar that never parks and never comes back.
+    await claimBar();
   })();
 });
 
@@ -696,7 +702,7 @@ async function handle(request: Request): Promise<unknown> {
 
       // Switching on must hide nothing: what is already on the bar becomes the
       // default set. Switching off must leave the bar holding everything again.
-      if (!was && now) await adoptExistingBar();
+      if (!was && now) await claimBar();
       if (was && !now) await restoreBookmarks();
       // The bookmark submenu only exists while the feature is on.
       if (was !== now) await rebuildContextMenus();
@@ -708,8 +714,12 @@ async function handle(request: Request): Promise<unknown> {
       return { ok: true, moved };
     }
 
-    case "listBookmarks":
-      return { entries: await listBookmarks() };
+    case "listBookmarks": {
+      // Claim first: an entry nobody owns is invisible to the panel, and an
+      // empty panel over a full bar is the least explainable state there is.
+      const { onBar } = await claimBar();
+      return { entries: await listBookmarks(), onBar };
+    }
 
     case "assignBookmark": {
       const state = await loadState();

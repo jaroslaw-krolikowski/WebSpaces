@@ -108,25 +108,39 @@ async function folderFor(containerId: string, containers: Container[]): Promise<
 }
 
 /**
- * First run: everything already on the bar becomes the property of the default
- * container. Switching on the feature must not make anything disappear, and the
- * bookmarks someone has collected over years are the default set by any sane
- * reading.
+ * Claims whatever sits unowned on the bar for the container currently showing,
+ * and reports how many entries the bar holds in total. On the first run nothing
+ * is mounted yet, so this is also what hands the existing bar to the default
+ * container: switching the feature on must not make anything disappear, and
+ * bookmarks collected over years are the default set by any sane reading.
+ *
+ * Adoption used to happen only when the checkbox was ticked, which left a hole:
+ * `pullFromSync` writes the settings straight to storage, so the feature can
+ * arrive from another profile already switched on and nothing ever claims the
+ * bar. An unowned entry then belongs to nobody, so it never parks, never comes
+ * back, and does not appear in settings at all - the bar looks full and the
+ * panel looks empty. Running this on every start and every listing closes it.
  */
-export async function adoptExistingBar(): Promise<number> {
-  const owners = await readOwners();
-  const bar = await barId();
-  let adopted = 0;
+export async function claimBar(): Promise<{ claimed: number; onBar: number }> {
+  const state = await loadState();
+  const children = await chrome.bookmarks.getChildren(await barId());
+  if (!state.settings.bookmarksPerContainer) return { claimed: 0, onBar: children.length };
 
-  for (const child of await chrome.bookmarks.getChildren(bar)) {
+  const owners = await readOwners();
+  const mounted = (await readMounted()) ?? DEFAULT_CONTAINER_ID;
+  let claimed = 0;
+
+  for (const child of children) {
     if (owners[child.id]) continue;
-    owners[child.id] = DEFAULT_CONTAINER_ID;
-    adopted += 1;
+    owners[child.id] = mounted;
+    claimed += 1;
   }
 
-  await writeOwners(owners);
-  await chrome.storage.local.set({ [MOUNTED_KEY]: DEFAULT_CONTAINER_ID });
-  return adopted;
+  if (claimed > 0) {
+    await writeOwners(owners);
+    await chrome.storage.local.set({ [MOUNTED_KEY]: mounted });
+  }
+  return { claimed, onBar: children.length };
 }
 
 /**

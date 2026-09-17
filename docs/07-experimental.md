@@ -28,12 +28,21 @@ Folders move as units. A folder of twenty links is one move and arrives intact.
 
 ### Ownership
 
-- Adopted on first enable: everything on the bar becomes the default container.
+- Adopted on first enable: everything on the bar becomes the default container, because nothing
+  is mounted yet.
 - Created later: whatever container is showing when the bookmark lands on the bar owns it.
 - Restored from a parking folder: assigned to that container, including anything the user
   dropped into the folder by hand.
-- Found unowned on the bar during a switch: assigned to the container being parked, so nothing
-  is ever stranded.
+- Found unowned on the bar: claimed by the container currently showing. `claimBar` runs on every
+  start, after every sync pull and before every listing in settings, so nothing stays stranded.
+
+That last one is not belt and braces. `pullFromSync` writes settings straight to storage, so the
+feature can arrive from another profile already switched on, with no checkbox ever ticked on this
+machine and therefore no adoption. The bar then belongs to nobody: it never parks, never comes
+back, and shows nowhere in settings. The panel looked empty over a full bar, which is the least
+explainable state this feature can be in. Claiming on every entry point is what closes it, and the
+panel states how many entries the extension can see on the bar so the next such gap is visible
+rather than puzzling.
 
 ### Choosing the container
 
