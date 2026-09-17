@@ -1,0 +1,301 @@
+{
+  "appName": { "message": "WebSpaces" },
+  "appDesc": {
+    "message": "Kontenery w stylu Firefoksa oparte na grupach kart Chrome: sejf ciasteczek dla każdego kontenera i kopia sesji do pliku JSON."
+  },
+
+  "brandTag": { "message": "Rozdziel swoje tożsamości w sieci" },
+  "navGroupConfig": { "message": "Konfiguracja" },
+  "navGroupSystem": { "message": "System" },
+  "navContainers": { "message": "Kontenery" },
+  "navRules": { "message": "Reguły" },
+  "navRealms": { "message": "Domeny izolacji" },
+  "navBehaviour": { "message": "Zachowanie" },
+  "navBackup": { "message": "Kopia i synchronizacja" },
+  "navExperimental": { "message": "Eksperymentalne" },
+  "navAuthor": { "message": "Autor" },
+  "navFootTag": { "message": "Kontenery oparte na grupach kart Chrome" },
+
+  "optionsTitle": { "message": "Ustawienia WebSpaces" },
+  "loading": { "message": "Wczytywanie..." },
+  "actionAdd": { "message": "Dodaj" },
+
+  "containersTitle": { "message": "Kontenery" },
+  "containersIntro": {
+    "message": "Kontener to grupa kart z własnym sejfem ciasteczek. Nazwana grupa utworzona w Chrome sama staje się kontenerem, a zmiana nazwy lub koloru po jednej stronie przenosi się na drugą."
+  },
+  "statContainers": { "message": "Kontenery" },
+  "statContainersNote": {
+    "message": "1 systemowy, własnych: $COUNT$",
+    "placeholders": { "count": { "content": "$1", "example": "2" } }
+  },
+  "statRules": { "message": "Reguły otwierania" },
+  "statRulesNote": {
+    "message": "włączonych: $COUNT$",
+    "placeholders": { "count": { "content": "$1", "example": "3" } }
+  },
+  "statRealms": { "message": "Domeny izolacji" },
+  "statRealmsNote": {
+    "message": "izolowanych adresów: $COUNT$",
+    "placeholders": { "count": { "content": "$1", "example": "12" } }
+  },
+  "addContainerTitle": { "message": "Dodaj kontener" },
+  "addContainerIntro": {
+    "message": "Osobna tożsamość dla klienta, dzierżawcy albo projektu obok. Grupa kart pojawi się, gdy przeniesiesz do niej pierwszą kartę."
+  },
+  "phContainerName": { "message": "Nazwa, na przykład Firma X" },
+  "phContainerDesc": { "message": "Opis, opcjonalnie" },
+  "phDescription": { "message": "Dodaj opis" },
+  "badgeSystem": { "message": "Systemowy" },
+  "pillIsolationOn": { "message": "Izolacja ciasteczek włączona" },
+  "pillIsolationOff": { "message": "Izolacja ciasteczek wyłączona" },
+  "ruleCountOne": { "message": "1 reguła" },
+  "ruleCountMany": {
+    "message": "reguł: $COUNT$",
+    "placeholders": { "count": { "content": "$1", "example": "4" } }
+  },
+  "deleteContainerTitle": { "message": "Usuń ten kontener" },
+  "keepVault": { "message": "Trzymaj własny sejf ciasteczek" },
+  "keepVaultNote": {
+    "message": "- gdy to wyłączysz, kontener jest tylko etykietą na grupie kart."
+  },
+
+  "rulesTitle": { "message": "Reguły otwierania" },
+  "rulesIntro": {
+    "message": "Adres pasujący do wzorca trafia do wskazanego kontenera bez pytania, także wtedy gdy jego host nie należy do żadnej domeny izolacji. Nowa reguła obejmuje również karty już otwarte."
+  },
+  "rulesPatterns": {
+    "message": "Sam host oznacza całą witrynę razem z subdomenami: <span class=\"mono\">example.com</span> łapie także <span class=\"mono\">www.example.com</span>. Możesz wkleić adres prosto z paska adresu, bo <span class=\"mono\">https://</span> i kończący ukośnik są pomijane. Gwiazdka zastępuje dowolny fragment (<span class=\"mono\">*.sharepoint.com</span>), a ukośnik zawęża regułę do ścieżki (<span class=\"mono\">admin.microsoft.com/*</span>)."
+  },
+  "rulesEmpty": { "message": "Nie ma jeszcze żadnej reguły." },
+  "phPattern": { "message": "np. admin.microsoft.com" },
+  "deleteRuleTitle": { "message": "Usuń tę regułę" },
+
+  "realmsTitle": { "message": "Domeny izolacji" },
+  "realmsIntro": {
+    "message": "Domena izolacji to zbiór adresów, których ciasteczka kolidują między kontenerami. Tylko one są podmieniane, więc adresy spoza każdej domeny działają normalnie i nigdy nie są zamrażane. Poniższe domeny to punkt wyjścia: edytuj je, usuwaj, dodawaj własne."
+  },
+  "realmsWarn": {
+    "message": "Wpisuj wyłącznie adresy <strong>wspólne dla wielu organizacji</strong>, gdzie ciasteczka faktycznie kolidują (<span class=\"mono\">id.atlassian.com</span>, <span class=\"mono\">login.microsoftonline.com</span>). Adresy, które niosą nazwę organizacji (<span class=\"mono\">acme.atlassian.net</span>, <span class=\"mono\">acme.sharepoint.com</span>), zostają poza domeną, bo nie kolidują i mogą działać w kilku kontenerach naraz."
+  },
+  "realmsEmpty": {
+    "message": "Brak domen izolacji. Nic nie jest podmieniane, więc kontenery są tylko etykietami na grupach kart."
+  },
+  "hostsCount": {
+    "message": "adresów: $COUNT$",
+    "placeholders": { "count": { "content": "$1", "example": "3" } }
+  },
+  "phRealmName": { "message": "Nazwa nowej domeny izolacji" },
+  "actionAddRealm": { "message": "Dodaj domenę" },
+  "actionAddPreset": { "message": "Dodaj gotową" },
+  "presetsAllAdded": { "message": "Wszystkie gotowe domeny są już dodane" },
+  "deleteRealmTitle": { "message": "Usuń tę domenę izolacji" },
+
+  "behaviourTitle": { "message": "Zachowanie" },
+  "behaviourIntro": {
+    "message": "Jak WebSpaces reaguje, gdy przechodzisz między kartami i kontami."
+  },
+  "optAutoMount": { "message": "Przełączaj kontenery automatycznie przy aktywacji karty" },
+  "optAutoMountNote": {
+    "message": "- kliknięcie karty innego kontenera od razu podmienia ciasteczka."
+  },
+  "optInterstitial": { "message": "Pytaj o kontener, gdy żadna reguła nie pasuje" },
+  "optInterstitialNote": {
+    "message": "- gdy to wyłączysz, karta zostaje w swoim obecnym kontenerze."
+  },
+  "optClearData": { "message": "Czyść dane witryn domeny przy przełączaniu" },
+  "optClearDataNote": {
+    "message": "- portale Microsoftu trzymają tokeny dostępu w localStorage, a nie w ciasteczkach. Bez tego karta może przez około godzinę działać na tokenie poprzedniego dzierżawcy. Wyłączenie przyspiesza przełączanie kosztem szczelności."
+  },
+
+  "backupTitle": { "message": "Kopia i synchronizacja" },
+  "backupIntro": {
+    "message": "Dwa mechanizmy i żaden nie każe niczego konfigurować. Chrome sam przenosi konfigurację między profilami, a plik JSON obejmuje całą resztę."
+  },
+  "syncHeading": { "message": "Synchronizacja między profilami Chrome" },
+  "optSync": { "message": "Synchronizuj konfigurację przez Chrome" },
+  "optSyncNote": {
+    "message": "- przenosi kontenery, domeny izolacji, reguły i ustawienia do każdego Chrome, w którym jesteś zalogowany na to samo konto. Chrome robi to przez konto, którego profil już używa, więc nie ma czego podłączać ani konfigurować. Okna, karty i ciasteczka nie są objęte, a wspólna kopia ma limit 100 KB."
+  },
+  "actionClearShared": { "message": "Wyczyść wspólną kopię" },
+  "syncOff": { "message": "Wyłączona. To urządzenie trzyma konfigurację dla siebie." },
+  "syncWaiting": { "message": "Czekam na pierwszą wymianę." },
+  "syncLast": {
+    "message": "Ostatnia wymiana: $WHEN$",
+    "placeholders": { "when": { "content": "$1", "example": "17.09.2026, 21:40" } }
+  },
+  "exportHeading": { "message": "Eksport i import pliku" },
+  "exportIntro": {
+    "message": "Obejmuje to, czego synchronizacja nie bierze: okna i karty, w pliku który trzymasz gdzie chcesz. Wrzuć go do folderu synchronizowanego przez dysk w chmurze i masz kopię poza maszyną, bez dawania czemukolwiek dostępu do konta."
+  },
+  "optCookies": { "message": "Dołącz ciasteczka do pliku" },
+  "optCookiesNote": {
+    "message": "- plik będzie wtedy zawierał żywe sesje logowania otwartym tekstem. Każdy, kto go zdobędzie, wejdzie na te konta bez hasła i bez MFA."
+  },
+  "actionExport": { "message": "Eksportuj do JSON" },
+  "actionImport": { "message": "Wczytaj z pliku" },
+  "optRestoreWindows": { "message": "Przy wczytywaniu przywróć także okna i karty" },
+
+  "expTitle": { "message": "Eksperymentalne" },
+  "expIntro": {
+    "message": "Te funkcje przestawiają twoje dane, a nie tylko je czytają. Wszystko tutaj można wyłączyć, a wyłączenie odkłada rzeczy na miejsce, ale jest to nowsze i mniej sprawdzone niż reszta rozszerzenia."
+  },
+  "expBookmarksHeading": { "message": "Zakładki, które chodzą za kontenerem" },
+  "expBookmarksIntro": {
+    "message": "Pasek pokazuje tylko zakładki kontenera, w którym jesteś. Cała reszta czeka w folderze <span class=\"mono\">WebSpaces</span> w Innych zakładkach. Chrome nie potrafi filtrować tego, co pokazuje pasek, więc wpisy są fizycznie przenoszone. Foldery przenoszą się w całości, więc folder z dwudziestoma linkami to jedno przeniesienie i zostaje nienaruszony."
+  },
+  "optBookmarks": { "message": "Daj każdemu kontenerowi własny pasek zakładek" },
+  "optBookmarksNote": {
+    "message": "- to, co jest teraz na pasku, staje się zestawem <strong>Default</strong>, więc włączenie nic nie chowa. Zakładki dodane później należą do kontenera, który akurat jest widoczny."
+  },
+  "labelOrphan": { "message": "Gdy kontener zostanie usunięty" },
+  "orphanDefault": { "message": "jego zakładki wracają do Default" },
+  "orphanEverywhere": { "message": "jego zakładki zostają na każdym pasku" },
+  "actionRestoreBookmarks": { "message": "Przywróć wszystkie zakładki na pasek" },
+  "ownersHeading": { "message": "Do kogo co należy" },
+  "ownersIntro": {
+    "message": "Chrome nie wpuszcza rozszerzeń ani do menu pod prawym przyciskiem na zakładce, ani do gwiazdki, więc to jest miejsce, w którym przekazujesz wpis innemu kontenerowi. Żeby zapisać stronę od razu do wybranego kontenera, kliknij stronę prawym przyciskiem i wybierz <span class=\"mono\">Zapisz stronę w kontenerze</span>."
+  },
+  "showBookmarksOf": { "message": "Pokaż zakładki kontenera" },
+  "pinnedEverywhere": { "message": "Przypięte do każdego paska" },
+  "expWarn": {
+    "message": "Chrome synchronizuje drzewo zakładek między profilami. Przenoszenie wpisów generuje ruch synchronizacji, a na drugiej maszynie z WebSpaces obie kopie przestawiałyby to samo drzewo. Lepiej najpierw pożyć z tym na jednej maszynie."
+  },
+  "barStateNone": {
+    "message": "Rozszerzenie nie widzi niczego na twoim pasku zakładek. Jeśli twój pasek nie jest pusty, sprawdź konsolę service workera w chrome://extensions."
+  },
+  "barStateOne": {
+    "message": "Pasek pokazuje teraz $NAME$, jeden wpis. Przekaż go innemu kontenerowi, a natychmiast zejdzie z paska.",
+    "placeholders": { "name": { "content": "$1", "example": "Default" } }
+  },
+  "barStateMany": {
+    "message": "Pasek pokazuje teraz $NAME$, wpisów: $COUNT$. Przekaż wpis innemu kontenerowi, a natychmiast zejdzie z paska; przekaż go do $NAME$, a zostanie, bo to jest właśnie ten pasek, na który patrzysz.",
+    "placeholders": {
+      "name": { "content": "$1", "example": "Default" },
+      "count": { "content": "$2", "example": "17" }
+    }
+  },
+  "emptyPinned": {
+    "message": "Nic nie jest przypięte. Wpis ustawiony na to zostaje na pasku w każdym kontenerze."
+  },
+  "emptyContainer": {
+    "message": "Jeszcze tu pusto. Zakładki dodane, gdy ten kontener jest widoczny, trafiają właśnie tutaj. Żeby przenieść istniejącą, wybierz wyżej kontener, który ją ma, i zmień jej właściciela."
+  },
+  "bookmarkFolder": { "message": "Folder" },
+
+  "authorTitle": { "message": "Autor" },
+  "authorIntro": { "message": "Kto to napisał i gdzie leży źródło." },
+  "authorName": { "message": "Jarosław Królikowski" },
+  "authorNote": {
+    "message": "WebSpaces wzięło się z jednego konkretnego problemu: logowanie Microsoft nie ma osobnego adresu dla każdej organizacji, więc nie da się być zalogowanym w dwóch dzierżawach naraz."
+  },
+  "linkSite": { "message": "jaroslawkrolikowski.pl" },
+  "linkSource": { "message": "Źródło na GitHubie" },
+
+  "msgEnterContainerName": { "message": "Podaj nazwę kontenera." },
+  "msgContainerAdded": {
+    "message": "Kontener \"$NAME$\" dodany. Grupa kart pojawi się, gdy przeniesiesz do niej pierwszą kartę, z okienka rozszerzenia albo z menu pod prawym przyciskiem.",
+    "placeholders": { "name": { "content": "$1", "example": "Firma X" } }
+  },
+  "confirmDeleteContainer": {
+    "message": "Usunąć kontener \"$NAME$\" razem z zapisanymi ciasteczkami?",
+    "placeholders": { "name": { "content": "$1", "example": "Firma X" } }
+  },
+  "msgRuleAdded": {
+    "message": "Reguła dodana. Żadna otwarta karta jeszcze do niej nie pasuje, zadziała przy następnej wizycie."
+  },
+  "msgRuleAddedMovedOne": { "message": "Reguła dodana. Przeniesiono 1 otwartą kartę." },
+  "msgRuleAddedMoved": {
+    "message": "Reguła dodana. Przeniesiono otwartych kart: $COUNT$.",
+    "placeholders": { "count": { "content": "$1", "example": "3" } }
+  },
+  "msgEnterRealmName": { "message": "Podaj nazwę domeny izolacji." },
+  "msgRealmAdded": {
+    "message": "Domena \"$NAME$\" dodana. Teraz wypisz adresy, które mają być izolowane.",
+    "placeholders": { "name": { "content": "$1", "example": "Okta" } }
+  },
+  "msgRealmDeleted": {
+    "message": "Domena \"$NAME$\" usunięta.",
+    "placeholders": { "name": { "content": "$1", "example": "Okta" } }
+  },
+  "msgPresetAdded": {
+    "message": "Gotowa domena \"$NAME$\" dodana.",
+    "placeholders": { "name": { "content": "$1", "example": "Google" } }
+  },
+  "confirmDeleteRealm": {
+    "message": "Usunąć domenę izolacji \"$NAME$\"?\n\nSesje zapisane dla niej we wszystkich kontenerach przepadną, a te adresy przestaną być izolowane. Sesja obecnie zamontowana wraca do kontenera domyślnego.",
+    "placeholders": { "name": { "content": "$1", "example": "Okta" } }
+  },
+  "confirmClearSync": {
+    "message": "Wyczyścić konfigurację współdzieloną przez Chrome?\n\nZnika tylko wspólna kopia. To urządzenie zachowuje wszystko, co ma, a następna zmiana tutaj opublikuje ją ponownie."
+  },
+  "msgSharedCleared": { "message": "Wspólna kopia wyczyszczona." },
+  "confirmExportCookies": {
+    "message": "Plik będzie zawierał żywe sesje logowania otwartym tekstem.\nKażdy, kto go otworzy, wejdzie na te konta bez hasła i bez MFA.\n\nKontynuować?"
+  },
+  "msgExported": {
+    "message": "Zapisano okien: $WINDOWS$, kontenerów: $CONTAINERS$.",
+    "placeholders": {
+      "windows": { "content": "$1", "example": "2" },
+      "containers": { "content": "$2", "example": "3" }
+    }
+  },
+  "msgLoaded": { "message": "Wczytano." },
+  "confirmRestoreBookmarks": {
+    "message": "Przywrócić wszystkie zaparkowane zakładki na pasek?\n\nNic nie zostanie usunięte. Pasek będzie trzymał wszystko naraz, czyli tak jak przed włączeniem tej funkcji."
+  },
+  "msgBookmarksRestored": {
+    "message": "Przeniesiono z powrotem na pasek: $COUNT$.",
+    "placeholders": { "count": { "content": "$1", "example": "17" } }
+  },
+  "msgBookmarksOn": {
+    "message": "Włączone. Pasek, który miałeś, jest teraz zestawem Default. Przejdź do innego kontenera, a pasek opróżni się dla niego i przyjmie to, co tam zapiszesz."
+  },
+
+  "popupMoveTab": { "message": "Przenieś tę kartę do" },
+  "popupRealms": { "message": "Domeny izolacji" },
+  "popupFrozen": { "message": "zamrożona" },
+  "popupCurrent": { "message": "obecny" },
+  "popupNoRealm": {
+    "message": "Ta witryna nie należy do żadnej domeny izolacji, więc nic tu nie jest podmieniane."
+  },
+  "popupInJar": {
+    "message": "$REALM$ - w słoiku: $NAME$",
+    "placeholders": {
+      "realm": { "content": "$1", "example": "Microsoft 365" },
+      "name": { "content": "$2", "example": "Firma X" }
+    }
+  },
+  "popupSwitch": { "message": "Przełącz na ten kontener i odśwież" },
+  "popupFrozenCount": {
+    "message": " - zamrożonych: $COUNT$",
+    "placeholders": { "count": { "content": "$1", "example": "2" } }
+  },
+  "actionSettings": { "message": "Ustawienia" },
+
+  "pickerPageTitle": { "message": "Wybierz kontener - WebSpaces" },
+  "pickerTitle": { "message": "W którym kontenerze to otworzyć?" },
+  "pickerRealm": {
+    "message": "Ten adres należy do domeny <strong>$NAME$</strong>, w której sesje kontenerów wzajemnie się wykluczają.",
+    "placeholders": { "name": { "content": "$1", "example": "Microsoft 365" } }
+  },
+  "pickerNoRealm": { "message": "Ten adres potrzebuje kontenera." },
+  "pickerMounted": {
+    "message": "Słoik przeglądarki trzyma teraz sesję kontenera <strong>$NAME$</strong>. Wybór innego kontenera parkuje tę sesję i zamraża jej otwarte karty do czasu powrotu.",
+    "placeholders": { "name": { "content": "$1", "example": "Firma X" } }
+  },
+  "pickerTabIsHere": { "message": "karta jest tutaj" },
+  "pickerNoTab": { "message": "Nie udało się rozpoznać tej karty." },
+  "pickerNoAddress": {
+    "message": "Karta została przypisana do kontenera, ale nie udało się ustalić adresu, do którego zmierzała. Wpisz go ponownie w pasku adresu - przejdzie już bez pytania."
+  },
+
+  "menuOpenLink": { "message": "Otwórz link w kontenerze" },
+  "menuMoveTab": { "message": "Przenieś kartę do kontenera" },
+  "menuBookmarkPage": { "message": "Zapisz stronę w kontenerze" },
+
+  "defaultContainerName": { "message": "Default" },
+  "defaultContainerDesc": {
+    "message": "Zwykłe przeglądanie, wszystko co nie należy do żadnego kontenera."
+  }
+}

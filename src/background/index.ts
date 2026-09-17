@@ -406,7 +406,7 @@ async function buildContextMenus(): Promise<void> {
 
     await createMenu({
       id: "webspaces-open",
-      title: "Open link in container",
+      title: chrome.i18n.getMessage("menuOpenLink"),
       contexts: ["link"],
     });
 
@@ -415,7 +415,7 @@ async function buildContextMenus(): Promise<void> {
       : ["page", "action"];
     await createMenu({
       id: "webspaces-move",
-      title: "Move tab to container",
+      title: chrome.i18n.getMessage("menuMoveTab"),
       contexts: moveContexts,
     });
 
@@ -426,7 +426,7 @@ async function buildContextMenus(): Promise<void> {
     if (state.settings.bookmarksPerContainer) {
       await createMenu({
         id: "webspaces-bookmark",
-        title: "Bookmark page in container",
+        title: chrome.i18n.getMessage("menuBookmarkPage"),
         contexts: pageContexts,
       });
     }

@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-i18n-doc="optionsTitle">
   <head>
     <meta charset="utf-8" />
-    <title>WebSpaces settings</title>
+    <title>WebSpaces</title>
     <link rel="stylesheet" href="ui.css" />
   </head>
   <body class="page">
@@ -12,11 +12,11 @@
           <img class="brand-mark" src="../icons/icon48.png" alt="" />
           <span class="brand-text">
             <span class="brand-name">WebSpaces</span>
-            <span class="brand-tag">Separate your web identities</span>
+            <span class="brand-tag" data-i18n="brandTag"></span>
           </span>
         </div>
 
-        <p class="nav-group">Configuration</p>
+        <p class="nav-group" data-i18n="navGroupConfig"></p>
         <button class="nav-item" data-section="containers">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path
@@ -25,14 +25,14 @@
             <polyline points="3.3 7 12 12 20.7 7" />
             <line x1="12" y1="22" x2="12" y2="12" />
           </svg>
-          Containers
+          <span data-i18n="navContainers"></span>
         </button>
         <button class="nav-item" data-section="rules">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
             <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
           </svg>
-          Rules
+          <span data-i18n="navRules"></span>
         </button>
         <button class="nav-item" data-section="realms">
           <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -40,10 +40,10 @@
             <polyline points="2 17 12 22 22 17" />
             <polyline points="2 12 12 17 22 12" />
           </svg>
-          Realms
+          <span data-i18n="navRealms"></span>
         </button>
 
-        <p class="nav-group">System</p>
+        <p class="nav-group" data-i18n="navGroupSystem"></p>
         <button class="nav-item" data-section="other">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <line x1="4" y1="21" x2="4" y2="14" />
@@ -56,7 +56,7 @@
             <line x1="9" y1="8" x2="15" y2="8" />
             <line x1="17" y1="16" x2="23" y2="16" />
           </svg>
-          Behaviour
+          <span data-i18n="navBehaviour"></span>
         </button>
         <button class="nav-item" data-section="backup">
           <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -64,7 +64,7 @@
             <polyline points="1 20 1 14 7 14" />
             <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
           </svg>
-          Backup &amp; Sync
+          <span data-i18n="navBackup"></span>
         </button>
         <button class="nav-item" data-section="experimental">
           <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -72,19 +72,19 @@
             <line x1="8" y1="2" x2="16" y2="2" />
             <line x1="7" y1="15" x2="17" y2="15" />
           </svg>
-          Experimental
+          <span data-i18n="navExperimental"></span>
         </button>
         <button class="nav-item" data-section="author">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
             <circle cx="12" cy="7" r="4" />
           </svg>
-          Author
+          <span data-i18n="navAuthor"></span>
         </button>
 
         <div class="nav-foot">
           <span class="brand-name" id="version">WebSpaces</span>
-          <span class="brand-tag">Containers built on Chrome tab groups</span>
+          <span class="brand-tag" data-i18n="navFootTag"></span>
         </div>
       </aside>
 
@@ -95,12 +95,8 @@
         <section class="panel" data-panel="containers" hidden>
           <header class="page-head">
             <div>
-              <h1>Containers</h1>
-              <p class="sub">
-                A container is a tab group with its own cookie vault. A named group you create in
-                Chrome becomes a container on its own, and renaming or recolouring either side
-                carries over to the other.
-              </p>
+              <h1 data-i18n="containersTitle"></h1>
+              <p class="sub" data-i18n="containersIntro"></p>
             </div>
           </header>
 
@@ -116,22 +112,14 @@
                 </svg>
               </span>
               <div class="grow">
-                <strong>Add a container</strong>
-                <p class="sub">
-                  A separate identity for a client, a tenant or a side project. Its tab group
-                  appears once you move the first tab into it.
-                </p>
+                <strong data-i18n="addContainerTitle"></strong>
+                <p class="sub" data-i18n="addContainerIntro"></p>
               </div>
             </div>
             <div class="row" style="margin-top: 10px">
-              <input type="text" id="new-name" placeholder="Name, for example Company X" />
-              <input
-                type="text"
-                id="new-description"
-                class="grow"
-                placeholder="Description, optional"
-              />
-              <button class="primary" id="add-container">Add</button>
+              <input type="text" id="new-name" data-i18n-ph="phContainerName" />
+              <input type="text" id="new-description" class="grow" data-i18n-ph="phContainerDesc" />
+              <button class="primary" id="add-container" data-i18n="actionAdd"></button>
             </div>
           </div>
         </section>
@@ -140,29 +128,18 @@
         <section class="panel" data-panel="rules" hidden>
           <header class="page-head">
             <div>
-              <h1>Opening rules</h1>
-              <p class="sub">
-                An address matching a pattern goes to the given container without asking, including
-                addresses on hosts that belong to no realm. A new rule also covers tabs already
-                open.
-              </p>
+              <h1 data-i18n="rulesTitle"></h1>
+              <p class="sub" data-i18n="rulesIntro"></p>
             </div>
           </header>
 
-          <p class="sub">
-            A bare host means the whole site, subdomains included:
-            <span class="mono">example.com</span> also catches
-            <span class="mono">www.example.com</span>. You can paste an address straight from the
-            address bar, since <span class="mono">https://</span> and a trailing slash are ignored.
-            A star stands for any fragment (<span class="mono">*.sharepoint.com</span>), and a slash
-            narrows the rule to a path (<span class="mono">admin.microsoft.com/*</span>).
-          </p>
+          <p class="sub" data-i18n-html="rulesPatterns"></p>
           <div id="rules" class="list"></div>
           <div class="card dashed">
             <div class="row">
-              <input type="text" id="new-pattern" class="grow" placeholder="e.g. admin.microsoft.com" />
+              <input type="text" id="new-pattern" class="grow" data-i18n-ph="phPattern" />
               <select id="new-rule-container" style="width: auto"></select>
-              <button class="primary" id="add-rule">Add</button>
+              <button class="primary" id="add-rule" data-i18n="actionAdd"></button>
             </div>
           </div>
         </section>
@@ -171,32 +148,21 @@
         <section class="panel" data-panel="realms" hidden>
           <header class="page-head">
             <div>
-              <h1>Isolation realms</h1>
-              <p class="sub">
-                A realm is a set of hosts whose cookies collide between containers. Only those are
-                swapped, so hosts outside every realm work normally and are never frozen. The realms
-                below are a starting point: edit them, delete them, add your own.
-              </p>
+              <h1 data-i18n="realmsTitle"></h1>
+              <p class="sub" data-i18n="realmsIntro"></p>
             </div>
           </header>
 
-          <div class="warn">
-            List only hosts <strong>shared across organisations</strong>, where cookies actually
-            collide (<span class="mono">id.atlassian.com</span>,
-            <span class="mono">login.microsoftonline.com</span>). Addresses whose name carries the
-            organisation (<span class="mono">acme.atlassian.net</span>,
-            <span class="mono">acme.sharepoint.com</span>) belong outside the realm, because they do
-            not collide and can run in several containers at once.
-          </div>
+          <div class="warn" data-i18n-html="realmsWarn"></div>
           <div id="realms" class="list"></div>
           <div class="card dashed">
             <div class="row">
-              <input type="text" id="new-realm" class="grow" placeholder="Name of the new realm" />
-              <button class="primary" id="add-realm">Add realm</button>
+              <input type="text" id="new-realm" class="grow" data-i18n-ph="phRealmName" />
+              <button class="primary" id="add-realm" data-i18n="actionAddRealm"></button>
             </div>
             <div class="row" style="margin-top: 8px">
               <select id="preset-realm" class="grow"></select>
-              <button id="add-preset">Add preset</button>
+              <button id="add-preset" data-i18n="actionAddPreset"></button>
             </div>
           </div>
         </section>
@@ -205,8 +171,8 @@
         <section class="panel" data-panel="other" hidden>
           <header class="page-head">
             <div>
-              <h1>Behaviour</h1>
-              <p class="sub">How WebSpaces reacts while you move between tabs and accounts.</p>
+              <h1 data-i18n="behaviourTitle"></h1>
+              <p class="sub" data-i18n="behaviourIntro"></p>
             </div>
           </header>
 
@@ -214,28 +180,22 @@
             <label class="check">
               <input type="checkbox" id="auto-mount" />
               <span>
-                Switch containers automatically when a tab is activated
-                <span class="sub"
-                  >- clicking a tab of another container swaps cookies right away.</span
-                >
+                <span data-i18n="optAutoMount"></span>
+                <span class="sub" data-i18n="optAutoMountNote"></span>
               </span>
             </label>
             <label class="check">
               <input type="checkbox" id="show-interstitial" />
               <span>
-                Ask which container when no rule matches
-                <span class="sub">- with this off the tab stays in its current container.</span>
+                <span data-i18n="optInterstitial"></span>
+                <span class="sub" data-i18n="optInterstitialNote"></span>
               </span>
             </label>
             <label class="check">
               <input type="checkbox" id="clear-site-data" />
               <span>
-                Clear realm site data when switching
-                <span class="sub">
-                  - Microsoft portals keep access tokens in localStorage rather than cookies.
-                  Without this, a tab can keep working on the token of the previous tenant for about
-                  an hour. Turning it off speeds up switching at the cost of tightness.
-                </span>
+                <span data-i18n="optClearData"></span>
+                <span class="sub" data-i18n="optClearDataNote"></span>
               </span>
             </label>
           </div>
@@ -245,58 +205,43 @@
         <section class="panel" data-panel="backup" hidden>
           <header class="page-head">
             <div>
-              <h1>Backup &amp; Sync</h1>
-              <p class="sub">
-                Two mechanisms, neither of which asks you to set anything up. Chrome carries your
-                configuration between profiles on its own, and a JSON file covers everything else.
-              </p>
+              <h1 data-i18n="backupTitle"></h1>
+              <p class="sub" data-i18n="backupIntro"></p>
             </div>
           </header>
 
-          <h3>Sync across your Chrome profiles</h3>
+          <h3 data-i18n="syncHeading"></h3>
           <div class="card">
             <label class="check">
               <input type="checkbox" id="sync-enabled" />
               <span>
-                Sync the configuration through Chrome
-                <span class="sub">
-                  - carries containers, realms, rules and settings to every Chrome you are signed
-                  into with the same account. Chrome moves it over the account the profile already
-                  uses, so there is nothing to connect and nothing to configure. Windows, tabs and
-                  cookies are not included, and the shared copy is capped at 100 KB.
-                </span>
+                <span data-i18n="optSync"></span>
+                <span class="sub" data-i18n="optSyncNote"></span>
               </span>
             </label>
             <div class="row spread">
               <span class="sub" id="sync-state"></span>
-              <button id="sync-clear">Clear the shared copy</button>
+              <button id="sync-clear" data-i18n="actionClearShared"></button>
             </div>
           </div>
 
-          <h3>Export and import a file</h3>
-          <p class="sub">
-            Covers what sync leaves out: windows and tabs, and a file you can keep wherever you
-            like. Put it in a folder your cloud drive already syncs and you have an off-machine
-            backup without granting anything access to your account.
-          </p>
+          <h3 data-i18n="exportHeading"></h3>
+          <p class="sub" data-i18n="exportIntro"></p>
           <div class="card">
             <label class="check">
               <input type="checkbox" id="include-cookies" />
               <span>
-                Include cookies in the file
-                <span class="sub"
-                  >- the file will then hold live sign-in sessions in plain text. Anyone who gets it
-                  enters those accounts without a password and without MFA.</span
-                >
+                <span data-i18n="optCookies"></span>
+                <span class="sub" data-i18n="optCookiesNote"></span>
               </span>
             </label>
             <div class="row">
-              <button class="primary" id="export">Export to JSON</button>
-              <button id="import">Load from file</button>
+              <button class="primary" id="export" data-i18n="actionExport"></button>
+              <button id="import" data-i18n="actionImport"></button>
             </div>
             <label class="check" style="margin-top: 10px">
               <input type="checkbox" id="restore-windows" />
-              <span>Also restore windows and tabs when loading</span>
+              <span data-i18n="optRestoreWindows"></span>
             </label>
             <input type="file" id="file" accept="application/json,.json" hidden />
           </div>
@@ -306,76 +251,54 @@
         <section class="panel" data-panel="experimental" hidden>
           <header class="page-head">
             <div>
-              <h1>Experimental</h1>
-              <p class="sub">
-                These features rearrange your data instead of only reading it. Everything here can
-                be switched off, and switching it off puts things back where they were, but it is
-                newer and less proven than the rest of the extension.
-              </p>
+              <h1 data-i18n="expTitle"></h1>
+              <p class="sub" data-i18n="expIntro"></p>
             </div>
           </header>
 
-          <h3>Bookmarks that follow the container</h3>
-          <p class="sub">
-            The bar shows only the bookmarks of the container you are in. Everything else waits in a
-            folder named <span class="mono">WebSpaces</span> under Other bookmarks. Chrome cannot
-            filter what the bar displays, so entries are physically moved. Folders move whole, so a
-            folder of twenty links costs one move and stays intact.
-          </p>
+          <h3 data-i18n="expBookmarksHeading"></h3>
+          <p class="sub" data-i18n-html="expBookmarksIntro"></p>
           <div class="card">
             <label class="check">
               <input type="checkbox" id="bookmarks-per-container" />
               <span>
-                Give each container its own bookmarks bar
-                <span class="sub">
-                  - whatever is on the bar right now becomes the <strong>Default</strong> set, so
-                  switching this on hides nothing. Bookmarks you add afterwards belong to whichever
-                  container is showing at the time.
-                </span>
+                <span data-i18n="optBookmarks"></span>
+                <span class="sub" data-i18n-html="optBookmarksNote"></span>
               </span>
             </label>
             <div class="row">
-              <label class="sub" for="orphan-bookmarks">When a container is deleted</label>
+              <label class="sub" for="orphan-bookmarks" data-i18n="labelOrphan"></label>
               <select id="orphan-bookmarks" style="width: auto">
-                <option value="default">its bookmarks move to Default</option>
-                <option value="everywhere">its bookmarks stay on every bar</option>
+                <option value="default" data-i18n="orphanDefault"></option>
+                <option value="everywhere" data-i18n="orphanEverywhere"></option>
               </select>
             </div>
             <div class="row" style="margin-top: 10px">
-              <button id="restore-bookmarks">Put every bookmark back on the bar</button>
+              <button id="restore-bookmarks" data-i18n="actionRestoreBookmarks"></button>
             </div>
           </div>
 
           <div id="bookmark-manager" hidden>
-            <h3>Who owns what</h3>
-            <p class="sub">
-              Chrome gives extensions no way into the right-click menu of a bookmark, nor into the
-              star button, so this is the place to hand an entry to another container. To save a
-              page straight into one, right-click the page and pick
-              <span class="mono">Bookmark page in container</span>.
-            </p>
+            <h3 data-i18n="ownersHeading"></h3>
+            <p class="sub" data-i18n-html="ownersIntro"></p>
             <p class="sub" id="bookmark-bar-state"></p>
             <div class="row">
-              <label class="sub" for="bookmark-owner">Show the bookmarks of</label>
+              <label class="sub" for="bookmark-owner" data-i18n="showBookmarksOf"></label>
               <span class="dot" id="bookmark-owner-dot"></span>
               <select id="bookmark-owner" class="grow"></select>
             </div>
             <div id="bookmark-list" class="list"></div>
           </div>
 
-          <div class="warn" style="margin-top: 12px">
-            Chrome syncs the bookmark tree between your profiles. Moving entries here produces sync
-            traffic, and on a second machine also running WebSpaces both copies would be
-            rearranging the same tree. Worth living with on one machine first.
-          </div>
+          <div class="warn" style="margin-top: 12px" data-i18n="expWarn"></div>
         </section>
 
         <!-- Author -->
         <section class="panel" data-panel="author" hidden>
           <header class="page-head">
             <div>
-              <h1>Author</h1>
-              <p class="sub">Who wrote this, and where the source lives.</p>
+              <h1 data-i18n="authorTitle"></h1>
+              <p class="sub" data-i18n="authorIntro"></p>
             </div>
           </header>
 
@@ -388,11 +311,8 @@
                 </svg>
               </span>
               <div class="grow">
-                <strong>Jaroslaw Krolikowski</strong>
-                <p class="sub">
-                  WebSpaces started from one concrete problem: Microsoft SSO has no per-organisation
-                  endpoint, so two tenants cannot be signed in at once.
-                </p>
+                <strong data-i18n="authorName"></strong>
+                <p class="sub" data-i18n="authorNote"></p>
               </div>
             </div>
             <div class="row" style="margin-top: 10px">
@@ -402,7 +322,7 @@
                   <polyline points="15 3 21 3 21 9" />
                   <line x1="10" y1="14" x2="21" y2="3" />
                 </svg>
-                jaroslawkrolikowski.pl
+                <span data-i18n="linkSite"></span>
               </a>
               <a
                 class="btn"
@@ -415,7 +335,7 @@
                   <polyline points="15 3 21 3 21 9" />
                   <line x1="10" y1="14" x2="21" y2="3" />
                 </svg>
-                Source on GitHub
+                <span data-i18n="linkSource"></span>
               </a>
             </div>
           </div>

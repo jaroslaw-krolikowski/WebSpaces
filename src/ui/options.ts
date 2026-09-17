@@ -17,6 +17,7 @@ import type {
   State,
 } from "../shared/types";
 import { el, esc } from "./dom";
+import { applyI18n, t } from "./i18n";
 
 let state: State;
 
@@ -126,19 +127,12 @@ function renderExperimental(): void {
   const showing = state.containers.find((c) => c.id === mountedOwner)?.name ?? mountedOwner;
   el("bookmark-bar-state").textContent =
     barCount === 0
-      ? "The extension sees nothing on your bookmarks bar. If yours is not empty, " +
-        "check the service worker console under chrome://extensions."
-      : `The bar is showing ${showing} right now, ${barCount} ` +
-        `${barCount === 1 ? "entry" : "entries"}. Hand one to another container and it leaves ` +
-        "the bar immediately; hand it to " +
-        `${showing} and it stays, because that is the bar you are looking at.`;
+      ? t("barStateNone")
+      : barCount === 1
+        ? t("barStateOne", showing)
+        : t("barStateMany", showing, String(barCount));
 }
 
-/**
- * The dot that sits beside a container picker. A `select` cannot hold a coloured
- * element, and colouring the option text itself would drop grey and yellow well
- * under the contrast floor, so the colour goes next to the control instead.
- */
 /** Colour names come from the Chrome enum, which is lower case throughout. */
 function capitalise(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
@@ -149,6 +143,11 @@ function ownerColor(owner: string): string | null {
   return COLOR_HEX[state.containers.find((c) => c.id === owner)?.color ?? "grey"];
 }
 
+/**
+ * The dot that sits beside a container picker. A `select` cannot hold a coloured
+ * element, and colouring the option text itself would drop grey and yellow well
+ * under the contrast floor, so the colour goes next to the control instead.
+ */
 function ownerDot(owner: string): string {
   const color = ownerColor(owner);
   return color === null
@@ -176,17 +175,14 @@ function ownerOptions(selected: string, counts?: Record<string, number>): string
 
   return (
     state.containers.map((c) => label(c.id, c.name)).join("") +
-    label(ALWAYS_VISIBLE, "Pinned to every bar")
+    label(ALWAYS_VISIBLE, t("pinnedEverywhere"))
   );
 }
 
 function renderBookmarkList(owned: number): void {
   if (owned === 0) {
-    el("bookmark-list").innerHTML =
-      shownOwner === ALWAYS_VISIBLE
-        ? '<p class="sub">Nothing is pinned. An entry set to this stays on the bar in every container.</p>'
-        : '<p class="sub">Nothing here yet. Bookmarks you add while this container is showing land ' +
-          "here. To bring one over, pick the container that has it above and change its owner.</p>";
+    const empty = shownOwner === ALWAYS_VISIBLE ? t("emptyPinned") : t("emptyContainer");
+    el("bookmark-list").innerHTML = `<p class="sub">${esc(empty)}</p>`;
     return;
   }
 
@@ -194,7 +190,7 @@ function renderBookmarkList(owned: number): void {
     .filter((entry) => entry.owner === shownOwner)
     .map((entry) => {
       // A folder carries everything inside it, so it is worth saying which is which.
-      const kind = entry.url ?? "Folder";
+      const kind = entry.url ?? t("bookmarkFolder");
       return `<div class="row" data-bookmark="${esc(entry.id)}">
         <span class="grow truncate" title="${esc(kind)}">${esc(entry.title)}</span>
         ${ownerDot(entry.owner)}
@@ -239,30 +235,17 @@ for (const id of ["bookmarks-per-container", "orphan-bookmarks"]) {
       });
       await load();
 
-      if (enabling) {
-        status(
-          "On. The bar you had is now the Default set. Switch to another container and the bar " +
-            "empties for it, ready for whatever you bookmark there.",
-        );
-      }
+      if (enabling) status(t("msgBookmarksOn"));
     });
   });
 }
 
 el("restore-bookmarks").addEventListener("click", () => {
-  if (
-    !confirm(
-      "Put every parked bookmark back on the bar?\n\n" +
-        "Nothing is deleted. The bar ends up holding everything at once, which is where it was " +
-        "before this feature was switched on.",
-    )
-  ) {
-    return;
-  }
+  if (!confirm(t("confirmRestoreBookmarks"))) return;
   run(async () => {
     const result = await send<{ moved?: number }>({ type: "restoreBookmarks" });
     await load();
-    status(`Moved ${result.moved ?? 0} back onto the bar.`);
+    status(t("msgBookmarksRestored", String(result.moved ?? 0)));
   });
 });
 
@@ -279,12 +262,12 @@ function renderSync(): void {
     return;
   }
   if (!state.settings.syncEnabled) {
-    node.textContent = "Off. This device keeps its configuration to itself.";
+    node.textContent = t("syncOff");
     return;
   }
   node.textContent = state.sync.lastAt
-    ? `Last exchange: ${new Date(state.sync.lastAt).toLocaleString()}`
-    : "Waiting for the first exchange.";
+    ? t("syncLast", new Date(state.sync.lastAt).toLocaleString())
+    : t("syncWaiting");
 }
 
 el("sync-enabled").addEventListener("change", () => {
@@ -298,19 +281,11 @@ el("sync-enabled").addEventListener("change", () => {
 });
 
 el("sync-clear").addEventListener("click", () => {
-  if (
-    !confirm(
-      "Clear the configuration shared through Chrome?\n\n" +
-        "Only the shared copy goes away. This device keeps everything it has, and the next " +
-        "change here will publish it again.",
-    )
-  ) {
-    return;
-  }
+  if (!confirm(t("confirmClearSync"))) return;
   run(async () => {
     await send({ type: "clearSync" });
     await load();
-    status("Shared copy cleared.");
+    status(t("msgSharedCleared"));
   });
 });
 
@@ -325,6 +300,8 @@ const SECTIONS = [
   "experimental",
   "author",
 ];
+
+applyI18n();
 
 // The version comes from the manifest so the footer cannot drift from the build.
 el("version").textContent = `WebSpaces ${chrome.runtime.getManifest().version}`;
@@ -372,29 +349,34 @@ function renderContainers(): void {
           <div class="row">
             <input type="text" class="ghost title grow" data-field="name"
                    value="${esc(container.name)}" ${locked ? "disabled" : ""} />
-            ${locked ? '<span class="badge">System</span>' : ""}
+            ${locked ? `<span class="badge">${t("badgeSystem")}</span>` : ""}
           </div>
           <input type="text" class="ghost grow sub" data-field="description"
-                 placeholder="Add a description"
-                 value="${esc(container.description ?? "")}" />
+                 placeholder="${esc(t("phDescription"))}"
+                 value="${esc(
+                   container.description ?? (locked ? t("defaultContainerDesc") : ""),
+                 )}" />
         </div>
         <span class="pill ${container.isolate ? "on" : ""}">
-          Cookie isolation ${container.isolate ? "on" : "off"}
+          ${t(container.isolate ? "pillIsolationOn" : "pillIsolationOff")}
         </span>
-        <span class="sub">${rules} ${rules === 1 ? "rule" : "rules"}</span>
+        <span class="sub">${
+          rules === 1 ? t("ruleCountOne") : t("ruleCountMany", String(rules))
+        }</span>
         <select data-field="color" style="width:auto" ${locked ? "disabled" : ""}>${colors}</select>
         ${
           locked
             ? ""
-            : `<button class="icon-btn" data-field="delete" title="Delete this container"
-                 aria-label="Delete this container">${ICONS.trash}</button>`
+            : `<button class="icon-btn" data-field="delete" title="${esc(
+                t("deleteContainerTitle"),
+              )}" aria-label="${esc(t("deleteContainerTitle"))}">${ICONS.trash}</button>`
         }
       </div>
       <label class="check" style="margin:10px 0 0">
         <input type="checkbox" data-field="isolate" ${container.isolate ? "checked" : ""}
                ${locked ? "disabled" : ""} />
-        <span>Keep its own cookie vault
-          <span class="sub">- with this off the container is only a label on a tab group.</span>
+        <span>${t("keepVault")}
+          <span class="sub">${t("keepVaultNote")}</span>
         </span>
       </label>
     </div>`;
@@ -411,9 +393,14 @@ function renderStats(): void {
   const enabled = state.rules.filter((rule) => rule.enabled).length;
 
   el("stats").innerHTML = [
-    stat(ICONS.box, state.containers.length, "Containers", `1 system, ${custom} of your own`),
-    stat(ICONS.link, state.rules.length, "Opening rules", `${enabled} enabled`),
-    stat(ICONS.layers, state.realms.length, "Realms", `${hosts} hosts isolated`),
+    stat(
+      ICONS.box,
+      state.containers.length,
+      t("statContainers"),
+      t("statContainersNote", String(custom)),
+    ),
+    stat(ICONS.link, state.rules.length, t("statRules"), t("statRulesNote", String(enabled))),
+    stat(ICONS.layers, state.realms.length, t("statRealms"), t("statRealmsNote", String(hosts))),
   ].join("");
 }
 
@@ -454,7 +441,7 @@ el("containers").addEventListener("click", (event) => {
   if (!id) return;
   const container = state.containers.find((c) => c.id === id);
   if (!container) return;
-  if (!confirm(`Delete the container "${container.name}" and its saved cookies?`)) return;
+  if (!confirm(t("confirmDeleteContainer", container.name))) return;
   run(async () => {
     await send({ type: "deleteContainer", containerId: id });
     await load();
@@ -466,7 +453,7 @@ el("add-container").addEventListener("click", () => {
   const describe = el<HTMLInputElement>("new-description");
   const name = input.value.trim();
   if (!name) {
-    status("Enter a container name.", true);
+    status(t("msgEnterContainerName"), true);
     return;
   }
 
@@ -483,10 +470,7 @@ el("add-container").addEventListener("click", () => {
     await load();
     // A container on its own does not create a tab group yet - the group appears
     // once the first tab joins it. Worth saying out loud.
-    status(
-      `Container "${name}" added. Its tab group will appear once you move the first tab ` +
-        "into it, from the popup or the right-click menu.",
-    );
+    status(t("msgContainerAdded", name));
   });
 });
 
@@ -494,7 +478,7 @@ el("add-container").addEventListener("click", () => {
 
 function renderRules(): void {
   if (state.rules.length === 0) {
-    el("rules").innerHTML = '<p class="sub">No rules yet.</p>';
+    el("rules").innerHTML = `<p class="sub">${t("rulesEmpty")}</p>`;
     return;
   }
 
@@ -513,7 +497,8 @@ function renderRules(): void {
         <input type="text" class="grow" data-field="pattern" value="${esc(rule.pattern)}" />
         ${ownerDot(rule.containerId)}
         <select data-field="container" style="width:auto">${options}</select>
-        <button class="danger" data-field="delete">Delete</button>
+        <button class="icon-btn" data-field="delete" title="${esc(t("deleteRuleTitle"))}"
+                aria-label="${esc(t("deleteRuleTitle"))}">${ICONS.trash}</button>
       </div>`;
     })
     .join("");
@@ -579,9 +564,11 @@ el("add-rule").addEventListener("click", () => {
 
     const moved = result.moved ?? 0;
     status(
-      moved > 0
-        ? `Rule added. Moved ${moved} open ${moved === 1 ? "tab" : "tabs"}.`
-        : "Rule added. No open tab matches it yet, it will apply the next time you visit.",
+      moved === 0
+        ? t("msgRuleAdded")
+        : moved === 1
+          ? t("msgRuleAddedMovedOne")
+          : t("msgRuleAddedMoved", String(moved)),
     );
   });
 });
@@ -591,15 +578,17 @@ el("add-rule").addEventListener("click", () => {
 function renderRealms(): void {
   el("realms").innerHTML =
     state.realms.length === 0
-      ? '<p class="sub">No realms. Nothing is swapped, so containers are just labels on ' +
-        "tab groups.</p>"
+      ? `<p class="sub">${t("realmsEmpty")}</p>`
       : state.realms
           .map(
             (realm) => `<div class="card" data-realm="${esc(realm.id)}">
         <div class="row">
-          <input type="text" class="grow" data-field="name" value="${esc(realm.name)}" />
-          <span class="sub">${realm.hosts.length} hosts</span>
-          <button class="danger" data-field="delete">Delete</button>
+          <span class="icon-tile plain">${ICONS.layers}</span>
+          <input type="text" class="ghost title grow" data-field="name"
+                 value="${esc(realm.name)}" />
+          <span class="sub">${t("hostsCount", String(realm.hosts.length))}</span>
+          <button class="icon-btn" data-field="delete" title="${esc(t("deleteRealmTitle"))}"
+                  aria-label="${esc(t("deleteRealmTitle"))}">${ICONS.trash}</button>
         </div>
         <textarea data-field="hosts" style="margin-top:8px">${esc(realm.hosts.join("\n"))}</textarea>
       </div>`,
@@ -619,7 +608,7 @@ function refreshPresetPicker(): void {
   picker.disabled = available.length === 0;
   el<HTMLButtonElement>("add-preset").disabled = available.length === 0;
   if (available.length === 0) {
-    picker.innerHTML = "<option>Every preset has been added</option>";
+    picker.innerHTML = `<option>${t("presetsAllAdded")}</option>`;
   }
 }
 
@@ -653,19 +642,11 @@ el("realms").addEventListener("click", (event) => {
   if (!id) return;
   const realm = state.realms.find((r) => r.id === id);
   if (!realm) return;
-  if (
-    !confirm(
-      `Delete the realm "${realm.name}"?\n\n` +
-        "Sessions saved for it across all containers will be lost and those hosts will stop " +
-        "being isolated. The currently mounted session is handed back to the default container.",
-    )
-  ) {
-    return;
-  }
+  if (!confirm(t("confirmDeleteRealm", realm.name))) return;
   run(async () => {
     await send({ type: "deleteRealm", realmId: id });
     await load();
-    status(`Realm "${realm.name}" deleted.`);
+    status(t("msgRealmDeleted", realm.name));
   });
 });
 
@@ -673,7 +654,7 @@ el("add-realm").addEventListener("click", () => {
   const input = el<HTMLInputElement>("new-realm");
   const name = input.value.trim();
   if (!name) {
-    status("Enter a realm name.", true);
+    status(t("msgEnterRealmName"), true);
     return;
   }
   run(async () => {
@@ -681,7 +662,7 @@ el("add-realm").addEventListener("click", () => {
     await send({ type: "createRealm", name, hosts: [] });
     input.value = "";
     await load();
-    status(`Realm "${name}" added. Now list the hosts that should be isolated.`);
+    status(t("msgRealmAdded", name));
   });
 });
 
@@ -694,7 +675,7 @@ el("add-preset").addEventListener("click", () => {
     // same realm rather than a copy under a new id.
     await send({ type: "saveRealms", realms: [...state.realms, preset] });
     await load();
-    status(`Preset "${preset.name}" added.`);
+    status(t("msgPresetAdded", preset.name));
   });
 });
 
@@ -727,16 +708,7 @@ for (const id of ["auto-mount", "show-interstitial", "clear-site-data"]) {
 
 el("export").addEventListener("click", () => {
   const includeCookies = el<HTMLInputElement>("include-cookies").checked;
-  if (
-    includeCookies &&
-    !confirm(
-      "The file will contain live sign-in sessions in plain text.\n" +
-        "Anyone who opens it gets into those accounts without a password and without MFA." +
-        "\n\nContinue?",
-    )
-  ) {
-    return;
-  }
+  if (includeCookies && !confirm(t("confirmExportCookies"))) return;
 
   run(async () => {
     const snapshot = await send<Snapshot>({ type: "exportSnapshot", includeCookies });
@@ -747,7 +719,9 @@ el("export").addEventListener("click", () => {
     link.download = `webspaces-${new Date().toISOString().slice(0, 10)}.json`;
     link.click();
     URL.revokeObjectURL(url);
-    status(`Saved ${snapshot.windows.length} windows and ${snapshot.containers.length} containers.`);
+    status(
+      t("msgExported", String(snapshot.windows.length), String(snapshot.containers.length)),
+    );
   });
 });
 
@@ -767,7 +741,7 @@ el("file").addEventListener("change", () => {
         restoreWindows: el<HTMLInputElement>("restore-windows").checked,
       });
       await load();
-      status("Loaded.");
+      status(t("msgLoaded"));
     } finally {
       input.value = "";
     }

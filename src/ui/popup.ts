@@ -2,6 +2,7 @@ import { send } from "../shared/messages";
 import type { Overview } from "../shared/messages";
 import { COLOR_HEX, DEFAULT_CONTAINER_ID } from "../shared/types";
 import { el, esc } from "./dom";
+import { applyI18n, t } from "./i18n";
 
 const app = el("app");
 
@@ -25,39 +26,37 @@ async function render(): Promise<void> {
   html.push(
     `<span class="row grow truncate">
        <span class="dot" style="background:${COLOR_HEX[current?.color ?? "grey"]}"></span>
-       <strong class="truncate">${esc(current?.name ?? "Default")}</strong>
+       <strong class="truncate">${esc(current?.name ?? t("defaultContainerName"))}</strong>
      </span>`,
   );
-  if (activeTab?.frozen) html.push('<span class="frozen-badge">frozen</span>');
+  if (activeTab?.frozen) html.push(`<span class="frozen-badge">${t("popupFrozen")}</span>`);
   html.push("</div>");
 
   if (realm) {
     const mounted = byId.get(state.mounted[realm.id] ?? DEFAULT_CONTAINER_ID);
     html.push(
-      `<div class="sub" style="margin-top:6px">${esc(realm.name)} · in the jar:
-       ${esc(mounted?.name ?? "Default")}</div>`,
+      `<div class="sub" style="margin-top:6px">${esc(
+        t("popupInJar", realm.name, mounted?.name ?? t("defaultContainerName")),
+      )}</div>`,
     );
     if (activeTab?.frozen && current) {
       html.push(
         `<div class="row" style="margin-top:10px">
            <button class="primary grow" data-action="mount"
                    data-realm="${esc(realm.id)}" data-container="${esc(current.id)}">
-             Switch to this container and reload
+             ${t("popupSwitch")}
            </button>
          </div>`,
       );
     }
   } else {
-    html.push(
-      '<div class="sub" style="margin-top:6px">This site belongs to no realm, so no ' +
-        "cookies are swapped here.</div>",
-    );
+    html.push(`<div class="sub" style="margin-top:6px">${t("popupNoRealm")}</div>`);
   }
   html.push("</div>");
 
   /* Tab assignment */
   if (activeTab) {
-    html.push("<h2>Move this tab to</h2>");
+    html.push(`<h2>${t("popupMoveTab")}</h2>`);
     html.push('<div class="list">');
     for (const container of state.containers) {
       const active = container.id === activeTab.containerId;
@@ -66,7 +65,7 @@ async function render(): Promise<void> {
                  ${active ? "disabled" : ""}>
            <span class="dot" style="background:${COLOR_HEX[container.color]}"></span>
            <span class="grow truncate">${esc(container.name)}</span>
-           ${active ? '<span class="sub">current</span>' : ""}
+           ${active ? `<span class="sub">${t("popupCurrent")}</span>` : ""}
          </button>`,
       );
     }
@@ -74,7 +73,7 @@ async function render(): Promise<void> {
   }
 
   /* Realm summary */
-  html.push("<h2>Realms</h2>");
+  html.push(`<h2>${t("popupRealms")}</h2>`);
   html.push('<div class="list">');
   for (const item of state.realms) {
     const mounted = byId.get(state.mounted[item.id] ?? DEFAULT_CONTAINER_ID);
@@ -82,8 +81,8 @@ async function render(): Promise<void> {
     html.push(
       `<div class="row spread">
          <span class="grow truncate">${esc(item.name)}</span>
-         <span class="sub">${esc(mounted?.name ?? "Default")}${
-           frozen > 0 ? ` · ${frozen} frozen` : ""
+         <span class="sub">${esc(mounted?.name ?? t("defaultContainerName"))}${
+           frozen > 0 ? esc(t("popupFrozenCount", String(frozen))) : ""
          }</span>
        </div>`,
     );
@@ -125,4 +124,5 @@ async function handleAction(button: HTMLElement): Promise<void> {
   }
 }
 
+applyI18n();
 render().catch(fail);

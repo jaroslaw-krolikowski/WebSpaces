@@ -1,0 +1,301 @@
+{
+  "appName": { "message": "WebSpaces" },
+  "appDesc": {
+    "message": "Firefox-style containers built on Chrome tab groups: a cookie vault per container and session backup to JSON."
+  },
+
+  "brandTag": { "message": "Separate your web identities" },
+  "navGroupConfig": { "message": "Configuration" },
+  "navGroupSystem": { "message": "System" },
+  "navContainers": { "message": "Containers" },
+  "navRules": { "message": "Rules" },
+  "navRealms": { "message": "Realms" },
+  "navBehaviour": { "message": "Behaviour" },
+  "navBackup": { "message": "Backup & Sync" },
+  "navExperimental": { "message": "Experimental" },
+  "navAuthor": { "message": "Author" },
+  "navFootTag": { "message": "Containers built on Chrome tab groups" },
+
+  "optionsTitle": { "message": "WebSpaces settings" },
+  "loading": { "message": "Loading..." },
+  "actionAdd": { "message": "Add" },
+
+  "containersTitle": { "message": "Containers" },
+  "containersIntro": {
+    "message": "A container is a tab group with its own cookie vault. A named group you create in Chrome becomes a container on its own, and renaming or recolouring either side carries over to the other."
+  },
+  "statContainers": { "message": "Containers" },
+  "statContainersNote": {
+    "message": "1 system, $COUNT$ of your own",
+    "placeholders": { "count": { "content": "$1", "example": "2" } }
+  },
+  "statRules": { "message": "Opening rules" },
+  "statRulesNote": {
+    "message": "$COUNT$ enabled",
+    "placeholders": { "count": { "content": "$1", "example": "3" } }
+  },
+  "statRealms": { "message": "Realms" },
+  "statRealmsNote": {
+    "message": "$COUNT$ hosts isolated",
+    "placeholders": { "count": { "content": "$1", "example": "12" } }
+  },
+  "addContainerTitle": { "message": "Add a container" },
+  "addContainerIntro": {
+    "message": "A separate identity for a client, a tenant or a side project. Its tab group appears once you move the first tab into it."
+  },
+  "phContainerName": { "message": "Name, for example Company X" },
+  "phContainerDesc": { "message": "Description, optional" },
+  "phDescription": { "message": "Add a description" },
+  "badgeSystem": { "message": "System" },
+  "pillIsolationOn": { "message": "Cookie isolation on" },
+  "pillIsolationOff": { "message": "Cookie isolation off" },
+  "ruleCountOne": { "message": "1 rule" },
+  "ruleCountMany": {
+    "message": "$COUNT$ rules",
+    "placeholders": { "count": { "content": "$1", "example": "4" } }
+  },
+  "deleteContainerTitle": { "message": "Delete this container" },
+  "keepVault": { "message": "Keep its own cookie vault" },
+  "keepVaultNote": {
+    "message": "- with this off the container is only a label on a tab group."
+  },
+
+  "rulesTitle": { "message": "Opening rules" },
+  "rulesIntro": {
+    "message": "An address matching a pattern goes to the given container without asking, including addresses on hosts that belong to no realm. A new rule also covers tabs already open."
+  },
+  "rulesPatterns": {
+    "message": "A bare host means the whole site, subdomains included: <span class=\"mono\">example.com</span> also catches <span class=\"mono\">www.example.com</span>. You can paste an address straight from the address bar, since <span class=\"mono\">https://</span> and a trailing slash are ignored. A star stands for any fragment (<span class=\"mono\">*.sharepoint.com</span>), and a slash narrows the rule to a path (<span class=\"mono\">admin.microsoft.com/*</span>)."
+  },
+  "rulesEmpty": { "message": "No rules yet." },
+  "phPattern": { "message": "e.g. admin.microsoft.com" },
+  "deleteRuleTitle": { "message": "Delete this rule" },
+
+  "realmsTitle": { "message": "Isolation realms" },
+  "realmsIntro": {
+    "message": "A realm is a set of hosts whose cookies collide between containers. Only those are swapped, so hosts outside every realm work normally and are never frozen. The realms below are a starting point: edit them, delete them, add your own."
+  },
+  "realmsWarn": {
+    "message": "List only hosts <strong>shared across organisations</strong>, where cookies actually collide (<span class=\"mono\">id.atlassian.com</span>, <span class=\"mono\">login.microsoftonline.com</span>). Addresses whose name carries the organisation (<span class=\"mono\">acme.atlassian.net</span>, <span class=\"mono\">acme.sharepoint.com</span>) belong outside the realm, because they do not collide and can run in several containers at once."
+  },
+  "realmsEmpty": {
+    "message": "No realms. Nothing is swapped, so containers are just labels on tab groups."
+  },
+  "hostsCount": {
+    "message": "$COUNT$ hosts",
+    "placeholders": { "count": { "content": "$1", "example": "3" } }
+  },
+  "phRealmName": { "message": "Name of the new realm" },
+  "actionAddRealm": { "message": "Add realm" },
+  "actionAddPreset": { "message": "Add preset" },
+  "presetsAllAdded": { "message": "Every preset has been added" },
+  "deleteRealmTitle": { "message": "Delete this realm" },
+
+  "behaviourTitle": { "message": "Behaviour" },
+  "behaviourIntro": {
+    "message": "How WebSpaces reacts while you move between tabs and accounts."
+  },
+  "optAutoMount": { "message": "Switch containers automatically when a tab is activated" },
+  "optAutoMountNote": {
+    "message": "- clicking a tab of another container swaps cookies right away."
+  },
+  "optInterstitial": { "message": "Ask which container when no rule matches" },
+  "optInterstitialNote": {
+    "message": "- with this off the tab stays in its current container."
+  },
+  "optClearData": { "message": "Clear realm site data when switching" },
+  "optClearDataNote": {
+    "message": "- Microsoft portals keep access tokens in localStorage rather than cookies. Without this, a tab can keep working on the token of the previous tenant for about an hour. Turning it off speeds up switching at the cost of tightness."
+  },
+
+  "backupTitle": { "message": "Backup & Sync" },
+  "backupIntro": {
+    "message": "Two mechanisms, neither of which asks you to set anything up. Chrome carries your configuration between profiles on its own, and a JSON file covers everything else."
+  },
+  "syncHeading": { "message": "Sync across your Chrome profiles" },
+  "optSync": { "message": "Sync the configuration through Chrome" },
+  "optSyncNote": {
+    "message": "- carries containers, realms, rules and settings to every Chrome you are signed into with the same account. Chrome moves it over the account the profile already uses, so there is nothing to connect and nothing to configure. Windows, tabs and cookies are not included, and the shared copy is capped at 100 KB."
+  },
+  "actionClearShared": { "message": "Clear the shared copy" },
+  "syncOff": { "message": "Off. This device keeps its configuration to itself." },
+  "syncWaiting": { "message": "Waiting for the first exchange." },
+  "syncLast": {
+    "message": "Last exchange: $WHEN$",
+    "placeholders": { "when": { "content": "$1", "example": "17/09/2026, 21:40" } }
+  },
+  "exportHeading": { "message": "Export and import a file" },
+  "exportIntro": {
+    "message": "Covers what sync leaves out: windows and tabs, and a file you can keep wherever you like. Put it in a folder your cloud drive already syncs and you have an off-machine backup without granting anything access to your account."
+  },
+  "optCookies": { "message": "Include cookies in the file" },
+  "optCookiesNote": {
+    "message": "- the file will then hold live sign-in sessions in plain text. Anyone who gets it enters those accounts without a password and without MFA."
+  },
+  "actionExport": { "message": "Export to JSON" },
+  "actionImport": { "message": "Load from file" },
+  "optRestoreWindows": { "message": "Also restore windows and tabs when loading" },
+
+  "expTitle": { "message": "Experimental" },
+  "expIntro": {
+    "message": "These features rearrange your data instead of only reading it. Everything here can be switched off, and switching it off puts things back where they were, but it is newer and less proven than the rest of the extension."
+  },
+  "expBookmarksHeading": { "message": "Bookmarks that follow the container" },
+  "expBookmarksIntro": {
+    "message": "The bar shows only the bookmarks of the container you are in. Everything else waits in a folder named <span class=\"mono\">WebSpaces</span> under Other bookmarks. Chrome cannot filter what the bar displays, so entries are physically moved. Folders move whole, so a folder of twenty links costs one move and stays intact."
+  },
+  "optBookmarks": { "message": "Give each container its own bookmarks bar" },
+  "optBookmarksNote": {
+    "message": "- whatever is on the bar right now becomes the <strong>Default</strong> set, so switching this on hides nothing. Bookmarks you add afterwards belong to whichever container is showing at the time."
+  },
+  "labelOrphan": { "message": "When a container is deleted" },
+  "orphanDefault": { "message": "its bookmarks move to Default" },
+  "orphanEverywhere": { "message": "its bookmarks stay on every bar" },
+  "actionRestoreBookmarks": { "message": "Put every bookmark back on the bar" },
+  "ownersHeading": { "message": "Who owns what" },
+  "ownersIntro": {
+    "message": "Chrome gives extensions no way into the right-click menu of a bookmark, nor into the star button, so this is the place to hand an entry to another container. To save a page straight into one, right-click the page and pick <span class=\"mono\">Bookmark page in container</span>."
+  },
+  "showBookmarksOf": { "message": "Show the bookmarks of" },
+  "pinnedEverywhere": { "message": "Pinned to every bar" },
+  "expWarn": {
+    "message": "Chrome syncs the bookmark tree between your profiles. Moving entries here produces sync traffic, and on a second machine also running WebSpaces both copies would be rearranging the same tree. Worth living with on one machine first."
+  },
+  "barStateNone": {
+    "message": "The extension sees nothing on your bookmarks bar. If yours is not empty, check the service worker console under chrome://extensions."
+  },
+  "barStateOne": {
+    "message": "The bar is showing $NAME$ right now, 1 entry. Hand it to another container and it leaves the bar immediately.",
+    "placeholders": { "name": { "content": "$1", "example": "Default" } }
+  },
+  "barStateMany": {
+    "message": "The bar is showing $NAME$ right now, $COUNT$ entries. Hand one to another container and it leaves the bar immediately; hand it to $NAME$ and it stays, because that is the bar you are looking at.",
+    "placeholders": {
+      "name": { "content": "$1", "example": "Default" },
+      "count": { "content": "$2", "example": "17" }
+    }
+  },
+  "emptyPinned": {
+    "message": "Nothing is pinned. An entry set to this stays on the bar in every container."
+  },
+  "emptyContainer": {
+    "message": "Nothing here yet. Bookmarks you add while this container is showing land here. To bring one over, pick the container that has it above and change its owner."
+  },
+  "bookmarkFolder": { "message": "Folder" },
+
+  "authorTitle": { "message": "Author" },
+  "authorIntro": { "message": "Who wrote this, and where the source lives." },
+  "authorName": { "message": "Jaroslaw Krolikowski" },
+  "authorNote": {
+    "message": "WebSpaces started from one concrete problem: Microsoft SSO has no per-organisation endpoint, so two tenants cannot be signed in at once."
+  },
+  "linkSite": { "message": "jaroslawkrolikowski.pl" },
+  "linkSource": { "message": "Source on GitHub" },
+
+  "msgEnterContainerName": { "message": "Enter a container name." },
+  "msgContainerAdded": {
+    "message": "Container \"$NAME$\" added. Its tab group will appear once you move the first tab into it, from the popup or the right-click menu.",
+    "placeholders": { "name": { "content": "$1", "example": "Company X" } }
+  },
+  "confirmDeleteContainer": {
+    "message": "Delete the container \"$NAME$\" and its saved cookies?",
+    "placeholders": { "name": { "content": "$1", "example": "Company X" } }
+  },
+  "msgRuleAdded": {
+    "message": "Rule added. No open tab matches it yet, it will apply the next time you visit."
+  },
+  "msgRuleAddedMovedOne": { "message": "Rule added. Moved 1 open tab." },
+  "msgRuleAddedMoved": {
+    "message": "Rule added. Moved $COUNT$ open tabs.",
+    "placeholders": { "count": { "content": "$1", "example": "3" } }
+  },
+  "msgEnterRealmName": { "message": "Enter a realm name." },
+  "msgRealmAdded": {
+    "message": "Realm \"$NAME$\" added. Now list the hosts that should be isolated.",
+    "placeholders": { "name": { "content": "$1", "example": "Okta" } }
+  },
+  "msgRealmDeleted": {
+    "message": "Realm \"$NAME$\" deleted.",
+    "placeholders": { "name": { "content": "$1", "example": "Okta" } }
+  },
+  "msgPresetAdded": {
+    "message": "Preset \"$NAME$\" added.",
+    "placeholders": { "name": { "content": "$1", "example": "Google" } }
+  },
+  "confirmDeleteRealm": {
+    "message": "Delete the realm \"$NAME$\"?\n\nSessions saved for it across all containers will be lost and those hosts will stop being isolated. The currently mounted session is handed back to the default container.",
+    "placeholders": { "name": { "content": "$1", "example": "Okta" } }
+  },
+  "confirmClearSync": {
+    "message": "Clear the configuration shared through Chrome?\n\nOnly the shared copy goes away. This device keeps everything it has, and the next change here will publish it again."
+  },
+  "msgSharedCleared": { "message": "Shared copy cleared." },
+  "confirmExportCookies": {
+    "message": "The file will contain live sign-in sessions in plain text.\nAnyone who opens it gets into those accounts without a password and without MFA.\n\nContinue?"
+  },
+  "msgExported": {
+    "message": "Saved $WINDOWS$ windows and $CONTAINERS$ containers.",
+    "placeholders": {
+      "windows": { "content": "$1", "example": "2" },
+      "containers": { "content": "$2", "example": "3" }
+    }
+  },
+  "msgLoaded": { "message": "Loaded." },
+  "confirmRestoreBookmarks": {
+    "message": "Put every parked bookmark back on the bar?\n\nNothing is deleted. The bar ends up holding everything at once, which is where it was before this feature was switched on."
+  },
+  "msgBookmarksRestored": {
+    "message": "Moved $COUNT$ back onto the bar.",
+    "placeholders": { "count": { "content": "$1", "example": "17" } }
+  },
+  "msgBookmarksOn": {
+    "message": "On. The bar you had is now the Default set. Switch to another container and the bar empties for it, ready for whatever you bookmark there."
+  },
+
+  "popupMoveTab": { "message": "Move this tab to" },
+  "popupRealms": { "message": "Realms" },
+  "popupFrozen": { "message": "frozen" },
+  "popupCurrent": { "message": "current" },
+  "popupNoRealm": {
+    "message": "This site belongs to no realm, so no cookies are swapped here."
+  },
+  "popupInJar": {
+    "message": "$REALM$ - in the jar: $NAME$",
+    "placeholders": {
+      "realm": { "content": "$1", "example": "Microsoft 365" },
+      "name": { "content": "$2", "example": "Company X" }
+    }
+  },
+  "popupSwitch": { "message": "Switch to this container and reload" },
+  "popupFrozenCount": {
+    "message": " - $COUNT$ frozen",
+    "placeholders": { "count": { "content": "$1", "example": "2" } }
+  },
+  "actionSettings": { "message": "Settings" },
+
+  "pickerPageTitle": { "message": "Choose a container - WebSpaces" },
+  "pickerTitle": { "message": "Which container should open this?" },
+  "pickerRealm": {
+    "message": "This address belongs to the <strong>$NAME$</strong> realm, where container sessions are mutually exclusive.",
+    "placeholders": { "name": { "content": "$1", "example": "Microsoft 365" } }
+  },
+  "pickerNoRealm": { "message": "This address needs a container." },
+  "pickerMounted": {
+    "message": "The browser jar currently holds the session of <strong>$NAME$</strong>. Choosing another container parks that session and freezes its open tabs until you come back.",
+    "placeholders": { "name": { "content": "$1", "example": "Company X" } }
+  },
+  "pickerTabIsHere": { "message": "tab is here" },
+  "pickerNoTab": { "message": "Could not identify this tab." },
+  "pickerNoAddress": {
+    "message": "The tab was assigned to the container, but the address it was heading to could not be determined. Type it again in the address bar - it will go through without asking."
+  },
+
+  "menuOpenLink": { "message": "Open link in container" },
+  "menuMoveTab": { "message": "Move tab to container" },
+  "menuBookmarkPage": { "message": "Bookmark page in container" },
+
+  "defaultContainerName": { "message": "Default" },
+  "defaultContainerDesc": {
+    "message": "Ordinary browsing, everything that belongs to no container."
+  }
+}

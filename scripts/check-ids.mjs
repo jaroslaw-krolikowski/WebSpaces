@@ -59,6 +59,47 @@ if (unstyled.length > 0) {
   console.log(`ui.css: ${used.size} classes used, all defined`);
 }
 
+// A message key nobody defined renders as the key itself, which is visible but
+// only in the language nobody is testing. Cheaper to catch here.
+const messages = JSON.parse(readFileSync("_locales/en/messages.json", "utf8"));
+const known = new Set(Object.keys(messages));
+const asked = new Set();
+
+for (const file of [...PAGES.flat(), "src/background/index.ts"]) {
+  const source = readFileSync(file, "utf8");
+  for (const match of source.matchAll(/\bt\(\s*"([^"]+)"/g)) asked.add(match[1]);
+  for (const match of source.matchAll(/getMessage\(\s*"([^"]+)"/g)) asked.add(match[1]);
+  for (const match of source.matchAll(/data-i18n(?:-html|-ph|-title|-doc)?="([^"]+)"/g)) {
+    asked.add(match[1]);
+  }
+}
+
+const undefinedKeys = [...asked].filter((key) => !known.has(key)).sort();
+if (undefinedKeys.length > 0) {
+  failed = true;
+  console.error("message keys used but missing from _locales/en/messages.json:");
+  for (const key of undefinedKeys) console.error(`  ${key}`);
+} else {
+  console.log(`_locales: ${asked.size} keys used, all defined in en`);
+}
+
+// Every other locale may be sparse - Chrome falls back to the default - but a
+// key that exists nowhere is a bug, and one that exists only in a translation is
+// dead weight.
+for (const locale of ["pl"]) {
+  const other = JSON.parse(readFileSync(`_locales/${locale}/messages.json`, "utf8"));
+  const gaps = [...known].filter((key) => !(key in other));
+  const strays = Object.keys(other).filter((key) => !known.has(key));
+  if (gaps.length > 0) console.warn(`_locales/${locale}: ${gaps.length} keys fall back to en`);
+  if (strays.length > 0) {
+    failed = true;
+    console.error(`_locales/${locale} defines keys that en does not: ${strays.join(", ")}`);
+  }
+  if (gaps.length === 0 && strays.length === 0) {
+    console.log(`_locales/${locale}: complete, ${Object.keys(other).length} keys`);
+  }
+}
+
 // Ids built at runtime are out of reach here, so this checks the literal calls
 // only. It has still caught every breakage so far.
 if (failed) process.exit(1);

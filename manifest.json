@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "WebSpaces",
+  "name": "__MSG_appName__",
   "version": "0.1.0",
-  "description": "Firefox-style containers built on Chrome tab groups: a cookie vault per container and session backup to JSON.",
+  "description": "__MSG_appDesc__",
+  "default_locale": "en",
   "minimum_chrome_version": "120",
   "background": {
     "service_worker": "background.js",

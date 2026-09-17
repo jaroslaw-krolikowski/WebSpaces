@@ -16,6 +16,9 @@ async function copyAssets() {
     filter: (src) => !src.endsWith(".ts"),
   });
   await cp("public/icons", `${outdir}/icons`, { recursive: true });
+  // Chrome reads _locales from the extension root and resolves __MSG_*__ in the
+  // manifest from it, so the folder keeps its name and its place.
+  await cp("_locales", `${outdir}/_locales`, { recursive: true });
 }
 
 const options = {

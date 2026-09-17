@@ -162,7 +162,8 @@ export const DEFAULT_SYNC: SyncState = {
 export const DEFAULT_CONTAINER: Container = {
   id: DEFAULT_CONTAINER_ID,
   name: "Default",
-  description: "Ordinary browsing, everything that belongs to no container.",
+  // No description on purpose: the settings page supplies a translated one, and a
+  // stored English sentence would stay English in every other language.
   color: "grey",
   isolate: true,
   createdAt: 0,

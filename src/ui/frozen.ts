@@ -3,13 +3,15 @@ import type { PendingInfo } from "../shared/messages";
 import { carriedUrl } from "../shared/realms";
 import { COLOR_HEX } from "../shared/types";
 import { el, esc } from "./dom";
+import { applyI18n, t } from "./i18n";
 
 const app = el("app");
 
 async function start(): Promise<void> {
+  applyI18n();
   const tab = await chrome.tabs.getCurrent();
   if (tab?.id === undefined) {
-    app.innerHTML = '<div class="card">Could not identify this tab.</div>';
+    app.innerHTML = `<div class="card">${t("pickerNoTab")}</div>`;
     return;
   }
   const tabId = tab.id;
@@ -36,12 +38,7 @@ async function resolve(tabId: number, containerId: string, url: string | null): 
     containerId,
     ...(url ? { url } : {}),
   });
-  if (!result?.navigated) {
-    throw new Error(
-      "The tab was assigned to the container, but the address it was heading to could " +
-        "not be determined. Type it again in the address bar - it will go through without asking.",
-    );
-  }
+  if (!result?.navigated) throw new Error(t("pickerNoAddress"));
 }
 
 function render(tabId: number, info: PendingInfo, carried: string | null): void {
@@ -49,24 +46,17 @@ function render(tabId: number, info: PendingInfo, carried: string | null): void 
   const mounted = info.mountedContainerId ? byId.get(info.mountedContainerId) : undefined;
   const html: string[] = [];
 
-  html.push("<h1>Which container should open this?</h1>");
+  html.push(`<h1>${t("pickerTitle")}</h1>`);
   html.push(
     `<p class="sub">${
-      info.realmName
-        ? `This address belongs to the <strong>${esc(info.realmName)}</strong> realm, where ` +
-          "container sessions are mutually exclusive."
-        : "This address needs a container."
+      info.realmName ? t("pickerRealm", esc(info.realmName)) : t("pickerNoRealm")
     }</p>`,
   );
 
   if (info.url) html.push(`<p class="mono">${esc(info.url)}</p>`);
 
   if (mounted) {
-    html.push(
-      `<div class="warn">The browser jar currently holds the session of
-       <strong>${esc(mounted.name)}</strong>. Choosing another container parks that session
-       and freezes its open tabs until you come back.</div>`,
-    );
+    html.push(`<div class="warn">${t("pickerMounted", esc(mounted.name))}</div>`);
   }
 
   html.push('<div class="list">');
@@ -75,7 +65,11 @@ function render(tabId: number, info: PendingInfo, carried: string | null): void 
       `<button class="pick" data-container="${esc(container.id)}">
          <span class="dot" style="background:${COLOR_HEX[container.color]}"></span>
          <span class="grow truncate">${esc(container.name)}</span>
-         ${container.id === info.currentContainerId ? '<span class="sub">tab is here</span>' : ""}
+         ${
+           container.id === info.currentContainerId
+             ? `<span class="sub">${t("pickerTabIsHere")}</span>`
+             : ""
+         }
        </button>`,
     );
   }
