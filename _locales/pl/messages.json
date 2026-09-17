@@ -107,6 +107,10 @@
   "optClearDataNote": {
     "message": "- portale Microsoftu trzymają tokeny dostępu w localStorage, a nie w ciasteczkach. Bez tego karta może przez około godzinę działać na tokenie poprzedniego dzierżawcy. Wyłączenie przyspiesza przełączanie kosztem szczelności."
   },
+  "optNewTab": { "message": "Nowa pusta karta zaczyna poza wszystkimi kontenerami" },
+  "optNewTabNote": {
+    "message": "- Ctrl+T daje kartę neutralną, a nie taką wewnątrz grupy, w której byłeś. Link otwarty z karty kontenera nadal zostaje w tym kontenerze. Wyłącz to, jeśli używasz plusa na końcu grupy do dodawania do niej kart."
+  },
 
   "backupTitle": { "message": "Kopia i synchronizacja" },
   "backupIntro": {

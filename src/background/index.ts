@@ -102,12 +102,29 @@ chrome.tabs.onCreated.addListener((tab) => {
  * died with no message at all. Firefox containers behave the same way.
  */
 async function inheritContainer(tab: chrome.tabs.Tab): Promise<void> {
-  if (tab.id === undefined || tab.openerTabId === undefined) {
+  if (tab.id === undefined) {
     scheduleGateRefresh();
     return;
   }
 
   const state = await loadState();
+
+  // A blank new tab is someone starting fresh, not following a link out of a
+  // container, so it belongs to nobody. Chrome may have put it in the group of
+  // whatever was in view, so it is moved out rather than only left unassigned.
+  if (state.settings.newTabInDefault && isNewTabPage(tab)) {
+    if (tab.groupId !== undefined && tab.groupId !== chrome.tabGroups.TAB_GROUP_ID_NONE) {
+      await chrome.tabs.ungroup(tab.id).catch(() => undefined);
+    }
+    await clearTabContainer(tab.id);
+    await refreshGate();
+    return;
+  }
+
+  if (tab.openerTabId === undefined) {
+    scheduleGateRefresh();
+    return;
+  }
   const inherited = await resolveTab(tab.openerTabId, state.containers);
   const container = state.containers.find((c) => c.id === inherited);
 
@@ -119,6 +136,23 @@ async function inheritContainer(tab: chrome.tabs.Tab): Promise<void> {
 
   // No delay here: the first request of a new tab can outrun the debounce.
   await refreshGate();
+}
+
+/**
+ * Whether a freshly created tab is the new tab page rather than a destination.
+ *
+ * `about:blank` deliberately does not count. A download window and a popup
+ * opened by a script start there and do need to inherit their container, which
+ * is the bug this whole inheritance exists to fix.
+ */
+function isNewTabPage(tab: chrome.tabs.Tab): boolean {
+  const url = tab.pendingUrl ?? tab.url ?? "";
+  return (
+    url.startsWith("chrome://newtab") ||
+    url.startsWith("chrome://new-tab-page") ||
+    url.startsWith("chrome-search://") ||
+    url === "edge://newtab/"
+  );
 }
 
 chrome.tabs.onRemoved.addListener((tabId) => {

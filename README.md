@@ -36,6 +36,10 @@ The binding works both ways:
   group cannot be empty, so it appears with the first tab you move into it.
 - **Tab to tab.** A tab opened from a container tab inherits that container. This covers
   `target="_blank"` links, popups and download windows.
+- **A blank new tab does not.** Ctrl+T gives you a tab outside every container, even when the tab
+  you were on belongs to one, and it is moved out of the group if Chrome put it there. That is a
+  fresh start, not following a link. Turn it off under **Behaviour** if you use the plus button at
+  the end of a group to add tabs to that group.
 
 Groups **without a name** are skipped: there is nothing to identify them by after a restart,
 when Chrome assigns fresh group ids. Closing the last tab of a group does **not** delete the

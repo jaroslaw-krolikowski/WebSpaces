@@ -43,6 +43,24 @@ user action (popup / picker / rule / context menu)
 Order matters. Clearing before writing guarantees no leftovers from the previous tenant, and
 the gate has to be in place before any tab is sent to a real address.
 
+## Which container a new tab gets
+
+`tabs.onCreated` decides, and the two cases pull in opposite directions.
+
+A tab opened **from** a container tab inherits that container: `target="_blank"` links, popups and
+download windows. Without it a download window landed in the default container, hit the gate as
+frozen, and died with no message at all.
+
+A **blank new tab** does not inherit, and is moved out of its group when Chrome placed it in one.
+Ctrl+T is starting fresh, not following a link, and a new tab appearing inside a client's group is
+both surprising and a way to visit the wrong place with the wrong session.
+
+Chrome reports both cases identically when the tab is created, so the plus button at the end of a
+group - a deliberate way of adding a tab to that group - cannot be told apart from Ctrl+T. That is
+what `newTabInDefault` is for: it is on by default and switching it off restores Chrome's own
+grouping. `about:blank` deliberately does not count as blank, because that is where a download
+window starts.
+
 ## Why the service worker can be trusted to be asleep
 
 MV3 kills the worker aggressively. Three defences:

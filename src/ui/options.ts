@@ -685,9 +685,10 @@ function renderSettings(): void {
   el<HTMLInputElement>("auto-mount").checked = state.settings.autoMountOnFocus;
   el<HTMLInputElement>("show-interstitial").checked = state.settings.showInterstitial;
   el<HTMLInputElement>("clear-site-data").checked = state.settings.clearSiteDataOnSwitch;
+  el<HTMLInputElement>("new-tab-default").checked = state.settings.newTabInDefault;
 }
 
-for (const id of ["auto-mount", "show-interstitial", "clear-site-data"]) {
+for (const id of ["auto-mount", "show-interstitial", "clear-site-data", "new-tab-default"]) {
   el(id).addEventListener("change", () => {
     run(async () => {
       await send({
@@ -697,6 +698,7 @@ for (const id of ["auto-mount", "show-interstitial", "clear-site-data"]) {
           autoMountOnFocus: el<HTMLInputElement>("auto-mount").checked,
           showInterstitial: el<HTMLInputElement>("show-interstitial").checked,
           clearSiteDataOnSwitch: el<HTMLInputElement>("clear-site-data").checked,
+          newTabInDefault: el<HTMLInputElement>("new-tab-default").checked,
         },
       });
       await load();

@@ -93,6 +93,8 @@ export interface Settings {
   clearSiteDataOnSwitch: boolean;
   /** Carry the configuration between Chrome profiles through chrome.storage.sync. */
   syncEnabled: boolean;
+  /** A blank new tab starts outside every container, rather than in the one in view. */
+  newTabInDefault: boolean;
   /** Experimental: give each container its own set of bookmarks on the bar. */
   bookmarksPerContainer: boolean;
   /** Where the bookmarks of a deleted container end up. */
@@ -149,6 +151,7 @@ export const DEFAULT_SETTINGS: Settings = {
   showInterstitial: true,
   clearSiteDataOnSwitch: true,
   syncEnabled: true,
+  newTabInDefault: true,
   bookmarksPerContainer: false,
   orphanBookmarks: "default",
 };

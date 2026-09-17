@@ -107,6 +107,10 @@
   "optClearDataNote": {
     "message": "- Microsoft portals keep access tokens in localStorage rather than cookies. Without this, a tab can keep working on the token of the previous tenant for about an hour. Turning it off speeds up switching at the cost of tightness."
   },
+  "optNewTab": { "message": "A new empty tab starts outside every container" },
+  "optNewTabNote": {
+    "message": "- Ctrl+T gives you a neutral tab rather than one inside the group you were in. A link opened from a container tab still stays in that container. Switch this off if you use the plus button at the end of a group to add tabs to it."
+  },
 
   "backupTitle": { "message": "Backup & Sync" },
   "backupIntro": {
