@@ -121,13 +121,15 @@ async function folderFor(containerId: string, containers: Container[]): Promise<
  * back, and does not appear in settings at all - the bar looks full and the
  * panel looks empty. Running this on every start and every listing closes it.
  */
-export async function claimBar(): Promise<{ claimed: number; onBar: number }> {
+export async function claimBar(): Promise<{ claimed: number; onBar: number; mounted: string }> {
   const state = await loadState();
   const children = await chrome.bookmarks.getChildren(await barId());
-  if (!state.settings.bookmarksPerContainer) return { claimed: 0, onBar: children.length };
+  const mounted = (await readMounted()) ?? DEFAULT_CONTAINER_ID;
+  if (!state.settings.bookmarksPerContainer) {
+    return { claimed: 0, onBar: children.length, mounted };
+  }
 
   const owners = await readOwners();
-  const mounted = (await readMounted()) ?? DEFAULT_CONTAINER_ID;
   let claimed = 0;
 
   for (const child of children) {
@@ -140,7 +142,7 @@ export async function claimBar(): Promise<{ claimed: number; onBar: number }> {
     await writeOwners(owners);
     await chrome.storage.local.set({ [MOUNTED_KEY]: mounted });
   }
-  return { claimed, onBar: children.length };
+  return { claimed, onBar: children.length, mounted };
 }
 
 /**

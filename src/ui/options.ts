@@ -44,6 +44,8 @@ function clearStatus(): void {
 let bookmarks: BookmarkEntry[] = [];
 /** How many entries sit on the bar, as the extension sees it. */
 let barCount = 0;
+/** Whose bookmarks the bar is showing at this moment. */
+let mountedOwner = DEFAULT_CONTAINER_ID;
 /** Which owner the bookmark list is showing, kept across reloads. */
 let shownOwner = DEFAULT_CONTAINER_ID;
 
@@ -52,12 +54,14 @@ async function load(): Promise<void> {
   state = overview.state;
   bookmarks = [];
   barCount = 0;
+  mountedOwner = DEFAULT_CONTAINER_ID;
   if (state.settings.bookmarksPerContainer) {
-    const listed = await send<{ entries: BookmarkEntry[]; onBar: number }>({
+    const listed = await send<{ entries: BookmarkEntry[]; onBar: number; mounted: string }>({
       type: "listBookmarks",
     });
     bookmarks = listed.entries;
     barCount = listed.onBar;
+    mountedOwner = listed.mounted;
   }
   renderContainers();
   renderRules();
@@ -88,14 +92,18 @@ function renderExperimental(): void {
   el("bookmark-owner").innerHTML = ownerOptions(shownOwner, counts);
   renderBookmarkList(counts[shownOwner] ?? 0);
 
-  // Saying what the extension actually sees on the bar. An empty list over a
-  // full bar used to look like a mystery, and it was a bug in ownership.
+  // Saying what the extension actually sees, and whose bar it is. An entry
+  // handed to the container already showing stays put, which reads as a broken
+  // control unless the page says which container that is.
+  const showing = state.containers.find((c) => c.id === mountedOwner)?.name ?? mountedOwner;
   el("bookmark-bar-state").textContent =
     barCount === 0
       ? "The extension sees nothing on your bookmarks bar. If yours is not empty, " +
         "check the service worker console under chrome://extensions."
-      : `Your bar holds ${barCount} ${barCount === 1 ? "entry" : "entries"} right now, ` +
-        "and every one of them belongs to a container here.";
+      : `The bar is showing ${showing} right now, ${barCount} ` +
+        `${barCount === 1 ? "entry" : "entries"}. Hand one to another container and it leaves ` +
+        "the bar immediately; hand it to " +
+        `${showing} and it stays, because that is the bar you are looking at.`;
 }
 
 /** The owner picker and every per-row destination share one list of options. */

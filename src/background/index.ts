@@ -48,6 +48,7 @@ async function bootstrap(): Promise<void> {
   if (state.settings.syncEnabled) await pullFromSync();
   // After a pull, because the pull can be what switched the feature on here.
   await claimBar();
+  await syncBookmarksToActiveTab();
   await syncContainersWithGroups();
   await rebuildContextMenus();
   await applyRulesToOpenTabs();
@@ -321,6 +322,28 @@ function scheduleBookmarkMount(containerId: string): void {
   }, 700);
 }
 
+/**
+ * Puts the bar in step with the tab in front, straight away.
+ *
+ * Mounting otherwise happens only when a tab is activated, so sitting on one
+ * tab - the settings page, typically - leaves the bar arranged for whatever
+ * container was last in view. An entry handed to another container then looks
+ * like it did not move, until an unrelated tab click finally triggers a mount.
+ * Every deliberate container decision calls this, because the user has just
+ * told us where they are and waiting for a tab click to agree is nonsense.
+ */
+async function syncBookmarksToActiveTab(): Promise<void> {
+  const state = await loadState();
+  if (!state.settings.bookmarksPerContainer) return;
+
+  // lastFocusedWindow rather than currentWindow: a service worker has no window
+  // of its own, so "current" can be whatever ran last.
+  const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  if (tab?.id === undefined) return;
+
+  await mountBookmarks(await resolveTab(tab.id, state.containers), state.containers);
+}
+
 chrome.cookies.onChanged.addListener((info) => {
   void (async () => {
     const state = await loadState();
@@ -502,6 +525,9 @@ async function moveTabToContainer(tabId: number, containerId: string): Promise<v
   const realm = tab?.url ? realmForUrl(state.realms, tab.url) : null;
   if (realm && container.isolate) await mountContainer(realm, container.id);
 
+  // The bar belongs to the tab in front, and that tab may have just changed
+  // container without any activation event to notice it.
+  await syncBookmarksToActiveTab();
   await refreshGate();
   await updateBadge(tabId);
   // Reload only when changing the container actually changes anything for this
@@ -585,6 +611,7 @@ async function handle(request: Request): Promise<unknown> {
       const container = state.containers.find((c) => c.id === request.containerId);
       if (!container) throw new Error("No such container.");
       await assignTabToContainer(request.tabId, container);
+      await syncBookmarksToActiveTab();
       await refreshGate();
       await updateBadge(request.tabId);
       return { ok: true };
@@ -749,8 +776,9 @@ async function handle(request: Request): Promise<unknown> {
     case "listBookmarks": {
       // Claim first: an entry nobody owns is invisible to the panel, and an
       // empty panel over a full bar is the least explainable state there is.
-      const { onBar } = await claimBar();
-      return { entries: await listBookmarks(), onBar };
+      await syncBookmarksToActiveTab();
+      const { onBar, mounted } = await claimBar();
+      return { entries: await listBookmarks(), onBar, mounted };
     }
 
     case "assignBookmark": {
@@ -761,6 +789,9 @@ async function handle(request: Request): Promise<unknown> {
       ) {
         throw new Error("No such container.");
       }
+      // The mounted container decides whether the entry belongs on the bar or in
+      // a folder, so it has to match the tab in front before anything moves.
+      await syncBookmarksToActiveTab();
       await assignBookmark(request.bookmarkId, request.owner, state.containers);
       return { ok: true };
     }
@@ -784,6 +815,7 @@ async function handle(request: Request): Promise<unknown> {
         if (realm && container.isolate) await mountContainer(realm, container.id);
       }
 
+      await syncBookmarksToActiveTab();
       // The gate has to be ready BEFORE the tab moves to the real address.
       await refreshGate();
       if (url) await chrome.tabs.update(request.tabId, { url });
