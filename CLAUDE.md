@@ -22,7 +22,7 @@ Read in this order:
 | `docs/02-isolation.md` | the gate, mounting, the vault, and what is out of reach |
 | `docs/03-realms.md` | how to choose realm hosts, and why that choice matters |
 | `docs/04-rules.md` | opening rules and pattern semantics |
-| `docs/05-backup.md` | Chrome sync, Google Drive backup, file export |
+| `docs/05-backup.md` | Chrome sync, file export, and why there is no cloud integration |
 | `docs/06-development.md` | build, tests, conventions |
 | `docs/07-experimental.md` | features that rearrange user data, and their escape hatches |
 

@@ -162,9 +162,9 @@ unchanged. Check your version at `chrome://version`.
 
 ## Experimental: bookmarks per container
 
-The bar shows only the bookmarks of the container you are in; the rest park in
-. Chrome cannot filter the bar, so entries are physically moved, and
-folders move whole.
+The bar shows only the bookmarks of the container you are in. Everything else parks in a folder
+named `WebSpaces` under Other bookmarks. Chrome cannot filter what the bar displays, so entries
+are physically moved; folders move whole and arrive intact.
 
 Switching it on adopts your existing bar into **Default**, so nothing disappears. Bookmarks you
 add later belong to whichever container is showing. Deleting a container sends its bookmarks back
