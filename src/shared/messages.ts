@@ -44,7 +44,7 @@ export type Request =
   | { type: "getOverview" }
   | { type: "mount"; realmId: string; containerId: string }
   | { type: "assignTab"; tabId: number; containerId: string }
-  | { type: "createContainer"; name: string; color: string }
+  | { type: "createContainer"; name: string; color: string; description?: string }
   | { type: "updateContainer"; container: Container }
   | { type: "deleteContainer"; containerId: string }
   | { type: "saveRules"; rules: Rule[] }

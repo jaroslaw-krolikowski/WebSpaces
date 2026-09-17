@@ -10,30 +10,39 @@ html:has(body.page) {
 :root {
   --bg: #ffffff;
   --surface: #f5f6f8;
+  --surface-2: #eceef2;
+  --rail: #f8f9fb;
   --border: #d8dbe0;
   --text: #17191c;
   --muted: #5f6570;
   --accent: #1a73e8;
+  --accent-soft: rgba(26, 115, 232, 0.12);
   --danger: #d93025;
   --ok: #1e8e3e;
+  --ok-soft: rgba(30, 142, 62, 0.14);
   --warn-bg: #fef7e0;
   --warn-border: #f0c36d;
-  --radius: 8px;
+  --radius: 12px;
+  --radius-sm: 8px;
   color-scheme: light dark;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #1c1f24;
-    --surface: #24282e;
-    --border: #3a3f47;
+    --bg: #14171c;
+    --surface: #1b1f26;
+    --surface-2: #232830;
+    --rail: #0f1216;
+    --border: #2d333c;
     --text: #e8eaed;
     --muted: #9aa0a9;
     --accent: #8ab4f8;
+    --accent-soft: rgba(138, 180, 248, 0.16);
     --danger: #f28b82;
     --ok: #81c995;
-    --warn-bg: #3a3320;
-    --warn-border: #7a6528;
+    --ok-soft: rgba(129, 201, 149, 0.16);
+    --warn-bg: #2b2718;
+    --warn-border: #5f5124;
   }
 }
 
@@ -53,7 +62,7 @@ body.popup {
 }
 
 body.page {
-  max-width: 1060px;
+  max-width: 1180px;
   margin: 0 auto;
 }
 
@@ -82,6 +91,26 @@ h3 {
   margin: 22px 0 8px;
 }
 
+/* Settings pages get a heading with room to breathe; the popup keeps the small one. */
+body.page h1 {
+  font-size: 26px;
+  letter-spacing: -0.02em;
+  margin: 0 0 6px;
+}
+
+.page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.page-head .sub {
+  max-width: 78ch;
+  margin: 0;
+}
+
 p {
   margin: 0 0 10px;
 }
@@ -99,8 +128,104 @@ p {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 12px 14px;
+  padding: 14px 16px;
   margin-bottom: 10px;
+}
+
+/* An invitation rather than a record: the outline says nothing lives here yet. */
+.card.dashed {
+  background: transparent;
+  border-style: dashed;
+}
+
+/* --- Statistics strip --- */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+
+.stat-num {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.stat-label {
+  font-weight: 500;
+}
+
+/* --- Icon tile, the square glyph that fronts a card --- */
+
+.icon-tile {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.icon-tile.plain {
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+.icon-tile svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Every glyph in the interface is an inline outline, so they share one setup. */
+svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.badge {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--muted);
+  flex: none;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+.pill.on {
+  background: var(--ok-soft);
+  color: var(--ok);
 }
 
 .row {
@@ -177,6 +302,30 @@ button.danger {
   padding: 4px 8px;
 }
 
+/* A square button holding one glyph: the trash, and anything like it later. */
+button.icon-btn {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted);
+}
+
+button.icon-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+button.icon-btn:hover {
+  color: var(--danger);
+  border-color: var(--border);
+  background: var(--bg);
+}
+
 button.link {
   background: none;
   border: none;
@@ -201,6 +350,36 @@ textarea {
    the label runs straight into it. */
 select {
   padding: 6px 30px 6px 10px;
+}
+
+/**
+ * A field that only looks like a field once you reach for it. The cards read as
+ * a list of containers rather than a form, while every value stays editable in
+ * place - no edit mode, no dialog.
+ */
+input.ghost {
+  background: transparent;
+  border-color: transparent;
+  padding: 3px 6px;
+}
+
+input.ghost:hover:not(:disabled) {
+  border-color: var(--border);
+}
+
+input.ghost:focus {
+  background: var(--bg);
+  border-color: var(--accent);
+}
+
+input.ghost:disabled {
+  color: var(--text);
+  opacity: 1;
+}
+
+input.ghost.title {
+  font-size: 15px;
+  font-weight: 600;
 }
 
 textarea {
@@ -290,7 +469,7 @@ footer {
 
 .shell {
   display: grid;
-  grid-template-columns: 190px 1fr;
+  grid-template-columns: 236px 1fr;
   gap: 28px;
   align-items: start;
 }
@@ -298,40 +477,100 @@ footer {
 .nav {
   position: sticky;
   top: 0;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 24px 0 24px 20px;
+  padding: 22px 14px;
+  background: var(--rail);
+  border-right: 1px solid var(--border);
 }
 
 .brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 6px;
+  margin-bottom: 18px;
+}
+
+.brand-mark {
+  width: 34px;
+  height: 34px;
+  flex: none;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.brand-name {
   font-size: 15px;
   font-weight: 600;
-  margin-bottom: 14px;
+}
+
+.brand-tag {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.nav-group {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 16px 0 4px;
+  padding: 0 10px;
+}
+
+.nav-group:first-of-type {
+  margin-top: 0;
 }
 
 .nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   text-align: left;
   background: none;
   border: 1px solid transparent;
+  border-radius: var(--radius-sm);
   color: var(--muted);
   padding: 8px 10px;
+}
+
+.nav-item svg {
+  width: 17px;
+  height: 17px;
+  flex: none;
 }
 
 .nav-item:hover {
   background: var(--surface);
   border-color: transparent;
+  color: var(--text);
 }
 
 .nav-item[aria-current="true"] {
-  background: var(--surface);
-  color: var(--text);
+  background: var(--accent-soft);
+  color: var(--accent);
   font-weight: 600;
+}
+
+.nav-foot {
+  margin-top: auto;
+  padding: 12px 10px 0;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
 }
 
 .content {
   min-width: 0;
-  padding: 24px 20px 64px 0;
+  padding: 26px 20px 64px 0;
 }
 
 .panel > h2:first-of-type {
@@ -406,14 +645,23 @@ footer {
 
   .nav {
     position: static;
+    min-height: 0;
     flex-direction: row;
     flex-wrap: wrap;
-    padding: 16px 16px 0;
+    padding: 16px 16px 12px;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
   }
 
-  .brand {
+  .brand,
+  .nav-group,
+  .nav-foot {
     width: 100%;
     margin-bottom: 8px;
+  }
+
+  .nav-foot {
+    margin-top: 12px;
   }
 
   .content {
@@ -422,7 +670,9 @@ footer {
 }
 
 a.btn {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font: inherit;
   padding: 6px 12px;
   border-radius: 6px;
@@ -430,6 +680,12 @@ a.btn {
   background: var(--bg);
   color: var(--text);
   text-decoration: none;
+}
+
+a.btn svg {
+  width: 15px;
+  height: 15px;
+  color: var(--muted);
 }
 
 a.btn:hover {

@@ -33,6 +33,11 @@ export interface Container {
   id: string;
   /** Doubles as the tab group title, so it has to be unique. */
   name: string;
+  /**
+   * A line for the reader, not for the machine. Chrome tab groups carry no such
+   * field, so this one lives only here and never reaches the group title.
+   */
+  description?: string;
   color: GroupColor;
   /** Whether the container keeps its own cookies. Off means it acts like the default. */
   isolate: boolean;
@@ -157,6 +162,7 @@ export const DEFAULT_SYNC: SyncState = {
 export const DEFAULT_CONTAINER: Container = {
   id: DEFAULT_CONTAINER_ID,
   name: "Default",
+  description: "Ordinary browsing, everything that belongs to no container.",
   color: "grey",
   isolate: true,
   createdAt: 0,

@@ -21,6 +21,33 @@ import { el, esc } from "./dom";
 let state: State;
 
 /**
+ * Inline outline glyphs. They live here rather than in a font or an icon package
+ * because the extension ships no runtime dependency, and an SVG that inherits
+ * `currentColor` costs nothing and themes itself.
+ */
+const ICONS = {
+  box: svg(
+    '<path d="M21 8v8a2 2 0 0 1-1 1.73l-7 4a2 2 0 0 1-2 0l-7-4A2 2 0 0 1 3 16V8a2 2 0 0 1 1-1.73l7-4a2 2 0 0 1 2 0l7 4A2 2 0 0 1 21 8z"/><polyline points="3.3 7 12 12 20.7 7"/><line x1="12" y1="22" x2="12" y2="12"/>',
+  ),
+  home: svg(
+    '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+  ),
+  link: svg(
+    '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
+  ),
+  layers: svg(
+    '<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>',
+  ),
+  trash: svg(
+    '<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>',
+  ),
+};
+
+function svg(body: string): string {
+  return `<svg viewBox="0 0 24 24" aria-hidden="true">${body}</svg>`;
+}
+
+/**
  * Every interface action goes through this wrapper. Errors coming from the
  * background used to vanish without a trace - the button simply did nothing.
  */
@@ -289,7 +316,18 @@ el("sync-clear").addEventListener("click", () => {
 
 /* --- Sidebar navigation --- */
 
-const SECTIONS = ["containers", "rules", "realms", "other", "backup", "experimental"];
+const SECTIONS = [
+  "containers",
+  "rules",
+  "realms",
+  "other",
+  "backup",
+  "experimental",
+  "author",
+];
+
+// The version comes from the manifest so the footer cannot drift from the build.
+el("version").textContent = `WebSpaces ${chrome.runtime.getManifest().version}`;
 
 function showSection(name: string): void {
   const target = SECTIONS.includes(name) ? name : "containers";
@@ -322,16 +360,37 @@ function renderContainers(): void {
           color,
         )}</option>`,
     ).join("");
+    const hex = COLOR_HEX[container.color];
+    const rules = state.rules.filter((rule) => rule.containerId === container.id).length;
 
     return `<div class="card" data-container="${esc(container.id)}">
       <div class="row">
-        <span class="dot" style="background:${COLOR_HEX[container.color]}"></span>
-        <input type="text" class="grow" data-field="name" value="${esc(container.name)}"
-               ${locked ? "disabled" : ""} />
+        <span class="icon-tile" style="background:${hex}22;color:${hex}">
+          ${locked ? ICONS.home : ICONS.box}
+        </span>
+        <div class="grow">
+          <div class="row">
+            <input type="text" class="ghost title grow" data-field="name"
+                   value="${esc(container.name)}" ${locked ? "disabled" : ""} />
+            ${locked ? '<span class="badge">System</span>' : ""}
+          </div>
+          <input type="text" class="ghost grow sub" data-field="description"
+                 placeholder="Add a description"
+                 value="${esc(container.description ?? "")}" />
+        </div>
+        <span class="pill ${container.isolate ? "on" : ""}">
+          Cookie isolation ${container.isolate ? "on" : "off"}
+        </span>
+        <span class="sub">${rules} ${rules === 1 ? "rule" : "rules"}</span>
         <select data-field="color" style="width:auto" ${locked ? "disabled" : ""}>${colors}</select>
-        ${locked ? "" : '<button class="danger" data-field="delete">Delete</button>'}
+        ${
+          locked
+            ? ""
+            : `<button class="icon-btn" data-field="delete" title="Delete this container"
+                 aria-label="Delete this container">${ICONS.trash}</button>`
+        }
       </div>
-      <label class="check" style="margin:8px 0 0">
+      <label class="check" style="margin:10px 0 0">
         <input type="checkbox" data-field="isolate" ${container.isolate ? "checked" : ""}
                ${locked ? "disabled" : ""} />
         <span>Keep its own cookie vault
@@ -342,7 +401,31 @@ function renderContainers(): void {
   });
 
   el("containers").innerHTML = html.join("");
+  renderStats();
   refreshRuleContainerPicker();
+}
+
+function renderStats(): void {
+  const custom = state.containers.length - 1;
+  const hosts = state.realms.reduce((total, realm) => total + realm.hosts.length, 0);
+  const enabled = state.rules.filter((rule) => rule.enabled).length;
+
+  el("stats").innerHTML = [
+    stat(ICONS.box, state.containers.length, "Containers", `1 system, ${custom} of your own`),
+    stat(ICONS.link, state.rules.length, "Opening rules", `${enabled} enabled`),
+    stat(ICONS.layers, state.realms.length, "Realms", `${hosts} hosts isolated`),
+  ].join("");
+}
+
+function stat(icon: string, value: number, label: string, note: string): string {
+  return `<div class="stat">
+    <span class="icon-tile plain">${icon}</span>
+    <div>
+      <div class="stat-num">${value}</div>
+      <div class="stat-label">${esc(label)}</div>
+      <div class="sub">${esc(note)}</div>
+    </div>
+  </div>`;
 }
 
 el("containers").addEventListener("change", (event) => {
@@ -355,6 +438,7 @@ el("containers").addEventListener("change", (event) => {
   const next: Container = { ...container };
   const field = input.dataset["field"];
   if (field === "name") next.name = (input as HTMLInputElement).value.trim() || container.name;
+  if (field === "description") next.description = (input as HTMLInputElement).value.trim();
   if (field === "color") next.color = input.value as GroupColor;
   if (field === "isolate") next.isolate = (input as HTMLInputElement).checked;
 
@@ -379,6 +463,7 @@ el("containers").addEventListener("click", (event) => {
 
 el("add-container").addEventListener("click", () => {
   const input = el<HTMLInputElement>("new-name");
+  const describe = el<HTMLInputElement>("new-description");
   const name = input.value.trim();
   if (!name) {
     status("Enter a container name.", true);
@@ -387,8 +472,14 @@ el("add-container").addEventListener("click", () => {
 
   run(async () => {
     clearStatus();
-    await send({ type: "createContainer", name, color: "" });
+    await send({
+      type: "createContainer",
+      name,
+      color: "",
+      description: describe.value.trim(),
+    });
     input.value = "";
+    describe.value = "";
     await load();
     // A container on its own does not create a tab group yet - the group appears
     // once the first tab joins it. Worth saying out loud.

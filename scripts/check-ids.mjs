@@ -34,6 +34,31 @@ for (const [script, page] of PAGES) {
   }
 }
 
+// A class nobody styles is the quiet half of the same problem: the markup looks
+// right in the source and renders as unstyled boxes. Nothing throws, so only
+// looking at the page would catch it.
+const css = readFileSync("src/ui/ui.css", "utf8");
+const defined = new Set([...css.matchAll(/\.([a-z][a-z0-9-]*)/gi)].map((match) => match[1]));
+const used = new Set();
+
+for (const file of [...PAGES.flat()]) {
+  const source = readFileSync(file, "utf8");
+  // Template literals interpolate, so a class list holding ${...} is skipped
+  // rather than guessed at.
+  for (const match of source.matchAll(/class=["'`]([^"'`$]+)["'`]/g)) {
+    for (const name of match[1].split(/\s+/).filter(Boolean)) used.add(name);
+  }
+}
+
+const unstyled = [...used].filter((name) => !defined.has(name)).sort();
+if (unstyled.length > 0) {
+  failed = true;
+  console.error("classes used in the markup that ui.css does not define:");
+  for (const name of unstyled) console.error(`  .${name}`);
+} else {
+  console.log(`ui.css: ${used.size} classes used, all defined`);
+}
+
 // Ids built at runtime are out of reach here, so this checks the literal calls
 // only. It has still caught every breakage so far.
 if (failed) process.exit(1);

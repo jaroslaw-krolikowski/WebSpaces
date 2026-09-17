@@ -627,6 +627,7 @@ async function handle(request: Request): Promise<unknown> {
       const container: Container = {
         id: uid(),
         name,
+        description: request.description?.trim() || undefined,
         color: (request.color as GroupColor) || pickColor(state.containers),
         isolate: true,
         createdAt: Date.now(),
