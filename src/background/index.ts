@@ -342,14 +342,46 @@ function supportsTabContext(): boolean {
   return match?.[1] !== undefined && Number(match[1]) >= 149;
 }
 
-async function rebuildContextMenus(): Promise<void> {
+/**
+ * One create, awaited, with its error read.
+ *
+ * `chrome.contextMenus.create` returns before the item exists and reports
+ * failure through `runtime.lastError`. Left unread, Chrome logs it as an
+ * unchecked error, which is how a menu clash shows up as console noise with no
+ * owner. Awaiting it also lets a rebuild finish before the next one starts.
+ */
+function createMenu(props: chrome.contextMenus.CreateProperties): Promise<void> {
+  return new Promise((resolve) => {
+    chrome.contextMenus.create(props, () => {
+      const failure = chrome.runtime.lastError;
+      if (failure) console.warn("WebSpaces: menu item skipped -", failure.message);
+      resolve();
+    });
+  });
+}
+
+let menuRebuild: Promise<void> = Promise.resolve();
+
+/**
+ * Rebuilds are serialised because several of them can start at once: the
+ * service worker waking up, the settings page opening, and a tab group being
+ * renamed all ask for one. Two overlapping runs both get past `removeAll` and
+ * then both create the same ids, and Chrome rejects the second set as
+ * duplicates - leaving the menu half built.
+ */
+function rebuildContextMenus(): Promise<void> {
+  menuRebuild = menuRebuild.then(buildContextMenus, buildContextMenus);
+  return menuRebuild;
+}
+
+async function buildContextMenus(): Promise<void> {
   // Menus are a convenience, not a critical feature. Their failure must not
   // topple an operation that already saved state, such as adding a container.
   try {
     await chrome.contextMenus.removeAll();
     const state = await loadState();
 
-    chrome.contextMenus.create({
+    await createMenu({
       id: "webspaces-open",
       title: "Open link in container",
       contexts: ["link"],
@@ -358,7 +390,7 @@ async function rebuildContextMenus(): Promise<void> {
     const moveContexts: [MenuContext, ...MenuContext[]] = supportsTabContext()
       ? ["tab", "page", "action"]
       : ["page", "action"];
-    chrome.contextMenus.create({
+    await createMenu({
       id: "webspaces-move",
       title: "Move tab to container",
       contexts: moveContexts,
@@ -369,7 +401,7 @@ async function rebuildContextMenus(): Promise<void> {
     // saving a page. Pointless while every container shares one bar.
     const pageContexts: [MenuContext, ...MenuContext[]] = ["page", "action"];
     if (state.settings.bookmarksPerContainer) {
-      chrome.contextMenus.create({
+      await createMenu({
         id: "webspaces-bookmark",
         title: "Bookmark page in container",
         contexts: pageContexts,
@@ -377,20 +409,20 @@ async function rebuildContextMenus(): Promise<void> {
     }
 
     for (const container of state.containers) {
-      chrome.contextMenus.create({
+      await createMenu({
         id: `webspaces-open:${container.id}`,
         parentId: "webspaces-open",
         title: container.name,
         contexts: ["link"],
       });
-      chrome.contextMenus.create({
+      await createMenu({
         id: `webspaces-move:${container.id}`,
         parentId: "webspaces-move",
         title: container.name,
         contexts: moveContexts,
       });
       if (state.settings.bookmarksPerContainer) {
-        chrome.contextMenus.create({
+        await createMenu({
           id: `webspaces-bookmark:${container.id}`,
           parentId: "webspaces-bookmark",
           title: container.name,
