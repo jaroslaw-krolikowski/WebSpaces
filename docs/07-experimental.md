@@ -93,3 +93,17 @@ bookmarks somewhere findable.
   back in the order they were parked rather than where they used to sit.
 - Switching is debounced by 700 ms, so flicking through tabs costs nothing and only settling on a
   container triggers a move.
+
+## Which container the bar is showing
+
+Tab activation is not the only thing that decides it. Mounting used to happen only there, which
+left the bar arranged for whatever container was last in view: stay on the settings page, hand an
+entry to another container, and it appears not to move until some unrelated tab click catches up.
+
+`syncBookmarksToActiveTab` mounts the container of the tab in front, immediately, and every
+deliberate decision calls it - moving a tab into a container, resolving the picker, assigning an
+entry, opening the panel, starting up. The user has just said where they are; waiting for a tab
+click to agree is nonsense.
+
+The panel states which container the bar is showing, because an entry handed to that same
+container correctly stays where it is, and without the sentence that reads as a broken control.
