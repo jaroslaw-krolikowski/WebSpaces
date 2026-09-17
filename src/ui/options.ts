@@ -90,6 +90,7 @@ function renderExperimental(): void {
   if (!owners.includes(shownOwner)) shownOwner = DEFAULT_CONTAINER_ID;
 
   el("bookmark-owner").innerHTML = ownerOptions(shownOwner, counts);
+  paintDot(el("bookmark-owner-dot"), shownOwner);
   renderBookmarkList(counts[shownOwner] ?? 0);
 
   // Saying what the extension actually sees, and whose bar it is. An entry
@@ -104,6 +105,35 @@ function renderExperimental(): void {
         `${barCount === 1 ? "entry" : "entries"}. Hand one to another container and it leaves ` +
         "the bar immediately; hand it to " +
         `${showing} and it stays, because that is the bar you are looking at.`;
+}
+
+/**
+ * The dot that sits beside a container picker. A `select` cannot hold a coloured
+ * element, and colouring the option text itself would drop grey and yellow well
+ * under the contrast floor, so the colour goes next to the control instead.
+ */
+/** Colour names come from the Chrome enum, which is lower case throughout. */
+function capitalise(value: string): string {
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+function ownerColor(owner: string): string | null {
+  if (owner === ALWAYS_VISIBLE) return null;
+  return COLOR_HEX[state.containers.find((c) => c.id === owner)?.color ?? "grey"];
+}
+
+function ownerDot(owner: string): string {
+  const color = ownerColor(owner);
+  return color === null
+    ? '<span class="dot ring"></span>'
+    : `<span class="dot" style="background:${color}"></span>`;
+}
+
+/** The same dot, for an element that lives in the markup rather than a template. */
+function paintDot(node: HTMLElement, owner: string): void {
+  const color = ownerColor(owner);
+  node.className = color === null ? "dot ring" : "dot";
+  node.style.background = color ?? "";
 }
 
 /** The owner picker and every per-row destination share one list of options. */
@@ -140,6 +170,7 @@ function renderBookmarkList(owned: number): void {
       const kind = entry.url ?? "Folder";
       return `<div class="row" data-bookmark="${esc(entry.id)}">
         <span class="grow truncate" title="${esc(kind)}">${esc(entry.title)}</span>
+        ${ownerDot(entry.owner)}
         <select data-field="owner" style="width:auto">${ownerOptions(entry.owner)}</select>
       </div>`;
     })
@@ -287,7 +318,9 @@ function renderContainers(): void {
     const locked = container.id === DEFAULT_CONTAINER_ID;
     const colors = GROUP_COLORS.map(
       (color) =>
-        `<option value="${color}" ${color === container.color ? "selected" : ""}>${color}</option>`,
+        `<option value="${color}" ${color === container.color ? "selected" : ""}>${capitalise(
+          color,
+        )}</option>`,
     ).join("");
 
     return `<div class="card" data-container="${esc(container.id)}">
@@ -387,6 +420,7 @@ function renderRules(): void {
       return `<div class="row" data-rule="${esc(rule.id)}">
         <input type="checkbox" data-field="enabled" ${rule.enabled ? "checked" : ""} />
         <input type="text" class="grow" data-field="pattern" value="${esc(rule.pattern)}" />
+        ${ownerDot(rule.containerId)}
         <select data-field="container" style="width:auto">${options}</select>
         <button class="danger" data-field="delete">Delete</button>
       </div>`;

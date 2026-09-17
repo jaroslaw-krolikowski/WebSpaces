@@ -135,6 +135,12 @@ p {
   flex: none;
 }
 
+/* The pinned set is not a container, so it gets a ring rather than a colour. */
+.dot.ring {
+  background: transparent;
+  border: 2px solid var(--muted);
+}
+
 button {
   font: inherit;
   padding: 6px 12px;
@@ -191,6 +197,12 @@ textarea {
   width: 100%;
 }
 
+/* Chrome draws the arrow inside the box, so without room reserved on the right
+   the label runs straight into it. */
+select {
+  padding: 6px 30px 6px 10px;
+}
+
 textarea {
   min-height: 90px;
   resize: vertical;
@@ -231,6 +243,18 @@ label.check input {
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+/* A list straight under a row of controls would sit flush against it, and two
+   adjacent dropdowns with no gap read as one overlapping the other. */
+.row + .list {
+  margin-top: 10px;
+}
+
+/* Inside a list the gap already does the spacing; the sibling margin would
+   stack on top of it and space the rows twice. */
+.list > .row + .row {
+  margin-top: 0;
 }
 
 .pick {
