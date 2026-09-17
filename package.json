@@ -8,9 +8,10 @@
     "build": "node build.mjs",
     "dev": "node build.mjs --watch",
     "typecheck": "tsc --noEmit",
-    "test": "node --test scripts/test-matching.mjs",
+    "test": "node --test scripts/test-matching.mjs && node scripts/check-ids.mjs",
     "icons": "node scripts/make-icons.mjs",
-    "package": "node scripts/package.mjs"
+    "package": "node scripts/package.mjs",
+    "check-ids": "node scripts/check-ids.mjs"
   },
   "devDependencies": {
     "@types/chrome": "^0.1.30",
