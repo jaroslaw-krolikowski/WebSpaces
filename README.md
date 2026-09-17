@@ -263,12 +263,25 @@ from the Web Store, failing with `CRX_REQUIRED_PROOF_MISSING`, so a `.crx` would
 time of whoever downloaded it. Sideloading a `.crx` works only through enterprise policy, which
 is a different deployment story.
 
+### Publishing
+
+Everything the Chrome Web Store asks for is written out in
+[docs/08-webstore.md](docs/08-webstore.md): listing copy in English and Polish, the single purpose
+statement, a justification per permission, the privacy tab answers and a screenshot shot list. The
+published privacy policy is [PRIVACY.md](PRIVACY.md).
+
+## Languages
+
+The interface ships in English and Polish. Chrome picks by browser language; there is no switch,
+because `chrome.i18n` is bound to the browser UI language. Adding a language means one file under
+`_locales/`, and a key left out simply falls back to English.
+
 ## Development
 
 ```bash
 npm run dev        # esbuild in watch mode
 npm run typecheck  # tsc --noEmit, strict
-npm test           # host, cookie and rule matching tests
+npm test           # matching tests, element ids, CSS classes, message keys
 npm run icons      # regenerate icons from src/logo-webspaces.png
 ```
 

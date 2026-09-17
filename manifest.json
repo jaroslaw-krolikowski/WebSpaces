@@ -24,12 +24,12 @@
     "declarativeNetRequest",
     "browsingData",
     "webNavigation",
-    "contextMenus",
-    "downloads"
+    "contextMenus"
   ],
   "host_permissions": [
     "<all_urls>"
   ],
+  "homepage_url": "https://github.com/jaroslaw-krolikowski/WebSpaces",
   "web_accessible_resources": [
     {
       "resources": [

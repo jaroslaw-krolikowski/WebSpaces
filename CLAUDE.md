@@ -25,8 +25,10 @@ Read in this order:
 | `docs/05-backup.md` | Chrome sync, file export, and why there is no cloud integration |
 | `docs/06-development.md` | build, tests, conventions |
 | `docs/07-experimental.md` | features that rearrange user data, and their escape hatches |
+| `docs/08-webstore.md` | store submission: listing copy, permission justifications, assets |
 
-`README.md` is the user-facing entry point and repeats the essentials.
+`README.md` is the user-facing entry point and repeats the essentials. `PRIVACY.md` is the
+published privacy policy the store listing links to; it has to stay true of the code.
 
 ## Platform constraints that shaped everything
 
@@ -67,7 +69,11 @@ time. This is a property of the platform, not of the implementation.
 ## Code conventions
 
 - TypeScript `strict: true`, plus `noUncheckedIndexedAccess` and `noUnusedLocals`
-- Comments and UI text in English; no framework, no runtime dependencies
+- Comments in English; no framework, no runtime dependencies
+- **No user-visible string in the source.** Every one lives in `_locales/en/messages.json` and
+  reaches the page through `data-i18n` or `t()`. `npm test` fails on a key that does not exist,
+  and warns when a translation falls back. `_locales/en` must stay complete, because it is what
+  every other locale falls back to.
 - **ASCII punctuation only.** Never use an em dash, write a plain hyphen instead. The long dash
   reads as machine-written text, which is not the impression this project should give.
 - Component and module files in kebab-case directories, camelCase exports
