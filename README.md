@@ -1,5 +1,7 @@
 # WebSpaces
 
+📢 Project suspended. Chrome has changed how it stores cache data, and working with separate cookies now requires additional software to be installed on the computer.
+
 Firefox-style container tabs for Chrome, built on **native Chrome tab groups**. Each container
 is a tab group with its own cookie vault.
 
